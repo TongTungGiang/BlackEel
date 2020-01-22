@@ -26,7 +26,16 @@ namespace BE.ECS
         {
             float3 position = t.Value;
             float3 direction = mf.Target - position;
-            position += math.normalize( direction) * ms.Value * Time.deltaTime;
+
+            if (math.length(direction) < ms.Value * Time.deltaTime)
+            {
+                position = mf.Target;
+                EntityManager.RemoveComponent<MoveForwardComponent>(e);
+            }
+            else
+            {
+                position += math.normalize(direction) * ms.Value * Time.deltaTime;
+            }
 
             t.Value = position;
         }
