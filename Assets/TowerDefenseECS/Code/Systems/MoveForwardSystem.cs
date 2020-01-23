@@ -12,15 +12,24 @@ namespace BE.ECS
     [BurstCompile]
     public class MoveForwardSystem : JobComponentSystem
     {
-        struct MoveForwardJob : IJobForEach<Translation, MoveForwardComponent, MoveSpeedComponent>
+        struct MoveForwardJob : IJobForEachWithEntity<Translation, MoveForwardComponent, MoveSpeedComponent>
         {
             public float dt;
 
-            public void Execute(ref Translation t, ref MoveForwardComponent mf, ref MoveSpeedComponent ms)
+            public void Execute(Entity entity, int index, ref Translation t, ref MoveForwardComponent mf, ref MoveSpeedComponent ms)
             {
                 float3 position = t.Value;
                 float3 direction = mf.Target - position;
-                position += math.normalize(direction) * ms.Value * Time.deltaTime;
+                float moveStep = ms.Value * dt;
+
+                if (math.length(direction) > moveStep)
+                {
+                    position += math.normalize(direction) * moveStep;
+                }
+                else
+                {
+                    position = mf.Target;
+                }
 
                 t.Value = position;
             }
@@ -29,6 +38,7 @@ namespace BE.ECS
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
             var job = new MoveForwardJob() { dt = Time.deltaTime };
+
             return job.Schedule(this, inputDeps);
         }
     }
