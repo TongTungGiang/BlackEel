@@ -6,6 +6,7 @@ using Unity.Entities;
 using Unity.Transforms;
 using Unity.Mathematics;
 using Unity.Jobs;
+using Unity.Collections;
 
 namespace BE.ECS
 {
@@ -14,13 +15,16 @@ namespace BE.ECS
     {
         struct MoveForwardJob : IJobForEachWithEntity<Translation, MoveForwardComponent, MoveSpeedComponent>
         {
-            public float dt;
+            public float DeltaTime;
+
+            [WriteOnly]
+            public EntityCommandBuffer.Concurrent CommandBuffer;
 
             public void Execute(Entity entity, int index, ref Translation t, ref MoveForwardComponent mf, ref MoveSpeedComponent ms)
             {
                 float3 position = t.Value;
                 float3 direction = mf.Target - position;
-                float moveStep = ms.Value * dt;
+                float moveStep = ms.Value * DeltaTime;
 
                 if (math.length(direction) > moveStep)
                 {
@@ -29,17 +33,29 @@ namespace BE.ECS
                 else
                 {
                     position = mf.Target;
+                    CommandBuffer.RemoveComponent<MoveForwardComponent>(index, entity);
                 }
 
                 t.Value = position;
             }
         }
 
+        EntityCommandBufferSystem m_Barrier;
+
+        protected override void OnCreate()
+        {
+            m_Barrier = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
+        }
+
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
-            var job = new MoveForwardJob() { dt = Time.deltaTime };
+            var commandBuffer = m_Barrier.CreateCommandBuffer().ToConcurrent();
+            var job = new MoveForwardJob() { DeltaTime = Time.deltaTime, CommandBuffer = commandBuffer };
 
-            return job.Schedule(this, inputDeps);
+            var jobHandle = job.Schedule(this, inputDeps);
+            m_Barrier.AddJobHandleForProducer(jobHandle);
+
+            return jobHandle;
         }
     }
 }
