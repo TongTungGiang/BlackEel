@@ -11,25 +11,42 @@ namespace BE.ECS
     {
         public GameObject cube;
         public int number;
+        public float spawnRate = 1;
+
+        private float m_LastSpawn;
+
+        private EntityManager m_Manager;
+        private Entity m_Prefab;
 
         // Start is called before the first frame update
         void Start()
         {
-            EntityManager manager = World.Active.EntityManager;
-            Entity cubePrefab = GameObjectConversionUtility.ConvertGameObjectHierarchy(cube, World.Active);
+            m_Manager = World.Active.EntityManager;
+            m_Prefab = GameObjectConversionUtility.ConvertGameObjectHierarchy(cube, World.Active);
+        }
 
-            for (int i = 0; i < number; i++)
+        private void Update()
+        {
+            if (Time.time - m_LastSpawn < spawnRate)
             {
-                Entity cubeInstance = manager.Instantiate(cubePrefab);
-                manager.SetName(cubeInstance, "Move Forward Cube");
-                manager.SetComponentData(cubeInstance, new Translation { Value = new float3(r, 0, r) });
-
-                manager.AddComponent<MoveForwardComponent>(cubeInstance);
-                manager.SetComponentData(cubeInstance, new MoveForwardComponent { Target = new float3(r, 0, r) });
-
-                manager.AddComponent<MoveSpeedComponent>(cubeInstance);
-                manager.SetComponentData(cubeInstance, new MoveSpeedComponent { Value = 10 });
+                return;
             }
+
+            m_LastSpawn = Time.time;
+            SpawnEntity();
+        }
+
+        private void SpawnEntity()
+        {
+            Entity cubeInstance = m_Manager.Instantiate(m_Prefab);
+            m_Manager.SetName(cubeInstance, "Move Forward Cube");
+            m_Manager.SetComponentData(cubeInstance, new Translation { Value = new float3(r, 0, r) });
+
+            m_Manager.AddComponent<MoveForwardComponent>(cubeInstance);
+            m_Manager.SetComponentData(cubeInstance, new MoveForwardComponent { Target = new float3(r, 0, r) });
+
+            m_Manager.AddComponent<MoveSpeedComponent>(cubeInstance);
+            m_Manager.SetComponentData(cubeInstance, new MoveSpeedComponent { Value = 10 });
         }
 
         float r { get { return UnityEngine.Random.Range(-100, 100); } }
