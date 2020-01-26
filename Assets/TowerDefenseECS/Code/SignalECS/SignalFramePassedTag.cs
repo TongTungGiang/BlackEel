@@ -7,5 +7,5 @@ using Unity.Entities;
 
 namespace BE.ECS.Signal
 {
-    class SignalFramePassedTag : IComponentData {}
+    struct SignalFramePassedTag : IComponentData {}
 }
