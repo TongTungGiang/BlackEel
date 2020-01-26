@@ -6,7 +6,9 @@ using Unity.Mathematics;
 namespace BE.ECS
 {
     [Serializable]
-    public struct WaypointListComponent : IComponentData
+    public struct WaypointComponent : IComponentData
     {
+        public int Index;
+        public float3 Position;
     }
 }

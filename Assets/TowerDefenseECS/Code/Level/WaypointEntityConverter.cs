@@ -10,21 +10,19 @@ namespace BE
 {
     public class WaypointEntityConverter : MonoBehaviour
     {
-        private float3[] waypoints;
-
         // Start is called before the first frame update
         void Awake()
         {
-            waypoints = new float3[transform.childCount];
             for (int i = 0; i < transform.childCount; i++)
             {
-                waypoints[i] = transform.GetChild(i).transform.position;
-            }
+                float3 waypointPos = transform.GetChild(i).transform.position;
 
-            //var manager = World.Active.EntityManager;
-            //Entity waypointHolder = manager.CreateEntity();
-            //manager.AddComponentData(waypointHolder, new WaypointListComponent { Waypoints = waypoints });
-            //manager.SetName(waypointHolder, "Waypoints");
+                EntityManager entityManager = World.Active.EntityManager;
+                Entity entity = entityManager.CreateEntity();
+                entityManager.AddComponentData(entity, new WaypointComponent { Index = transform.childCount, Position = waypointPos });
+                entityManager.SetName(entity, string.Format("Waypoint {0}", i));
+            }
         }
     }
+
 }
