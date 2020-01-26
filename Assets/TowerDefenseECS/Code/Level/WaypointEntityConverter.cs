@@ -15,7 +15,7 @@ namespace BE
         // Start is called before the first frame update
         void Awake()
         {
-            waypoints = new NativeArray<float3>(transform.childCount, Allocator.Persistent);
+            waypoints = new float3[transform.childCount];
             for (int i = 0; i < transform.childCount; i++)
             {
                 waypoints[i] = transform.GetChild(i).transform.position;
