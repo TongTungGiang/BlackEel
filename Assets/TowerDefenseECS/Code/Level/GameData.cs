@@ -1,18 +1,18 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Entities;
 
-public class GameData
+public class GameData : Singleton<GameData>
 {
-    private static GameData m_Instance;
-    public static GameData Instace
-    {
-        get
-        {
-            if (m_Instance == null)
-                m_Instance = new GameData();
+    private Entity m_AgentEntityPrefab = Entity.Null;
 
-            return m_Instance;
-        }
+    public void RegisterAgentEntityPrefab(Entity entityPrefab)
+    {
+        if (m_AgentEntityPrefab == Entity.Null)
+            m_AgentEntityPrefab = entityPrefab;
     }
+
+    public Entity AgentEntityPrefab { get { return m_AgentEntityPrefab; } }
+
 }

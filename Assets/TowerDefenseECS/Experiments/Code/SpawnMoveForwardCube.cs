@@ -18,11 +18,15 @@ namespace BE.ECS
         private EntityManager m_Manager;
         private Entity m_Prefab;
 
+        private float3 m_FirstPosition;
+
         // Start is called before the first frame update
         void Start()
         {
             m_Manager = World.Active.EntityManager;
             m_Prefab = GameObjectConversionUtility.ConvertGameObjectHierarchy(cube, World.Active);
+
+            GameData.Instance.RegisterAgentEntityPrefab(m_Prefab);
         }
 
         private void Update()
@@ -42,11 +46,9 @@ namespace BE.ECS
             m_Manager.SetName(cubeInstance, "Move Forward Cube");
             m_Manager.SetComponentData(cubeInstance, new Translation { Value = new float3(r, 0, r) });
 
-            m_Manager.AddComponent<MoveForwardComponent>(cubeInstance);
-            m_Manager.SetComponentData(cubeInstance, new MoveForwardComponent { Target = new float3(r, 0, r) });
+            m_Manager.AddComponentData(cubeInstance, new MoveSpeedComponent { Value = 10 });
 
-            m_Manager.AddComponent<MoveSpeedComponent>(cubeInstance);
-            m_Manager.SetComponentData(cubeInstance, new MoveSpeedComponent { Value = 10 });
+            m_Manager.AddComponentData(cubeInstance, new FollowWaypointTag { });
         }
 
         float r { get { return UnityEngine.Random.Range(-100, 100); } }
