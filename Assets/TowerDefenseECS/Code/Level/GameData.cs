@@ -5,6 +5,8 @@ using Unity.Entities;
 
 public class GameData : Singleton<GameData>
 {
+    public float spawnRate = 1;
+
     private Entity m_AgentEntityPrefab = Entity.Null;
 
     public void RegisterAgentEntityPrefab(Entity entityPrefab)

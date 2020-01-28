@@ -10,7 +10,6 @@ using Unity.Collections;
 
 namespace BE.ECS
 {
-    [BurstCompile]
     public class MoveForwardSystem : JobComponentSystem
     {
         struct MoveForwardJob : IJobForEachWithEntity<Translation, MoveForwardComponent, MoveSpeedComponent>

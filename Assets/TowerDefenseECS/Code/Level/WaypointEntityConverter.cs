@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
+using Unity.Transforms;
 using UnityEngine;
 
 namespace BE
@@ -19,7 +20,9 @@ namespace BE
 
                 EntityManager entityManager = World.Active.EntityManager;
                 Entity entity = entityManager.CreateEntity();
-                entityManager.AddSharedComponentData(entity, new WaypointComponent { Index = i, Position = waypointPos });
+                entityManager.AddSharedComponentData(entity, new WaypointIndexComponent { Value = i });
+                entityManager.AddSharedComponentData(entity, new WaypointCountComponent { Value = transform.childCount });
+                entityManager.AddComponentData(entity, new Translation { Value = waypointPos });
                 entityManager.SetName(entity, string.Format("Waypoint {0}", i));
             }
         }
