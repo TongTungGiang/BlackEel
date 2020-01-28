@@ -19,7 +19,7 @@ namespace BE
 
                 EntityManager entityManager = World.Active.EntityManager;
                 Entity entity = entityManager.CreateEntity();
-                entityManager.AddComponentData(entity, new WaypointComponent { Index = transform.childCount, Position = waypointPos });
+                entityManager.AddSharedComponentData(entity, new WaypointComponent { Index = i, Position = waypointPos });
                 entityManager.SetName(entity, string.Format("Waypoint {0}", i));
             }
         }
