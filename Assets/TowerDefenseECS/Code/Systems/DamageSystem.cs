@@ -11,17 +11,30 @@ namespace BE.ECS
     public class DamageSystem : JobComponentSystem
     {
         [BurstCompile]
-        struct DamageSystemJob : IJobForEach<DamageComponent, HealthComponent>
+        struct DamageSystemJob : IJobForEachWithEntity<DamageComponent, HealthComponent>
         {
-            public void Execute(ref DamageComponent damage, ref HealthComponent health)
+            [WriteOnly]
+            public EntityCommandBuffer.Concurrent CommandBuffer;
+
+            public void Execute(Entity entity, int jobIndex, ref DamageComponent damage, ref HealthComponent health)
             {
                 health.Value -= damage.Amount;
+
+                CommandBuffer.RemoveComponent<DamageComponent>(jobIndex, entity);
             }
+        }
+
+        EntityCommandBufferSystem m_Barrier;
+
+        protected override void OnCreate()
+        {
+            m_Barrier = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
         }
 
         protected override JobHandle OnUpdate(JobHandle inputDependencies)
         {
-            var job = new DamageSystemJob() { };
+            var commandBuffer = m_Barrier.CreateCommandBuffer().ToConcurrent();
+            var job = new DamageSystemJob() { CommandBuffer = commandBuffer };
             return job.Schedule(this, inputDependencies);
         }
     }
