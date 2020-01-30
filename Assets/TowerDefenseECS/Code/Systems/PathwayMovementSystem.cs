@@ -8,43 +8,34 @@ using static Unity.Mathematics.math;
 
 namespace BE.ECS
 {
-    public class PathwayMovementSystem : JobComponentSystem
+    public class PathwayMovementSystem : ComponentSystem
     {
-
-        [ExcludeComponent(typeof(MoveForwardComponent))]
-        [RequireComponentTag(typeof(FollowWaypointTag))]
-        struct UpdatePathwayTargetJob : IJobForEachWithEntity<WaypointMovementComponent>
-        {
-            [WriteOnly]
-            public EntityCommandBuffer.Concurrent CommandBuffer;
-            public WaypointManagementSystem WaypointManagement;
-
-            public void Execute(Entity e, int index, ref WaypointMovementComponent waypointMovement)
-            {
-                waypointMovement.CurrentTargetIndex++;
-
-                CommandBuffer.AddComponent(index, e, new MoveForwardComponent { Target = WaypointManagement.GetWaypointPosition(waypointMovement.CurrentTargetIndex) });
-            }
-        }
-
-        EntityCommandBufferSystem m_Barrier;
-        WaypointManagementSystem m_Waypoint;
+        EntityQuery m_Query;
 
         protected override void OnCreate()
         {
-            m_Barrier = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
-            m_Waypoint = World.GetOrCreateSystem<WaypointManagementSystem>();
+            EntityQueryDesc desc = new EntityQueryDesc()
+            {
+                All = new ComponentType[] { typeof(WaypointMovementComponent), typeof(FollowWaypointTag) },
+                None = new ComponentType[] { typeof(MoveForwardComponent) }
+            };
+            m_Query = GetEntityQuery(desc);
         }
 
-        protected override JobHandle OnUpdate(JobHandle inputDeps)
+        protected override void OnUpdate()
         {
-            var commandBuffer = m_Barrier.CreateCommandBuffer().ToConcurrent();
-            var job = new UpdatePathwayTargetJob() { CommandBuffer = commandBuffer, WaypointManagement = m_Waypoint };
+            var entities = m_Query.ToEntityArray(Allocator.TempJob);
 
-            var jobHandle = job.Schedule(this, inputDeps);
-            m_Barrier.AddJobHandleForProducer(jobHandle);
+            foreach (var e in entities)
+            {
+                WaypointMovementComponent waypointMovement = EntityManager.GetComponentData<WaypointMovementComponent>(e);
+                waypointMovement.CurrentTargetIndex++;
+                EntityManager.SetComponentData(e, waypointMovement);
 
-            return jobHandle;
+                EntityManager.AddComponentData(e, new MoveForwardComponent { Target = World.GetOrCreateSystem<WaypointManagementSystem>().GetWaypointPosition(waypointMovement.CurrentTargetIndex) });
+            }
+
+            entities.Dispose();
         }
     }
 }
