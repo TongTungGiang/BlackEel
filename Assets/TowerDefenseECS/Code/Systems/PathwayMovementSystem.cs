@@ -32,7 +32,14 @@ namespace BE.ECS
                 waypointMovement.CurrentTargetIndex++;
                 EntityManager.SetComponentData(e, waypointMovement);
 
-                EntityManager.AddComponentData(e, new MoveForwardComponent { Target = World.GetOrCreateSystem<WaypointManagementSystem>().GetWaypointPosition(waypointMovement.CurrentTargetIndex) });
+                if (World.GetOrCreateSystem<WaypointManagementSystem>().GetWaypointPosition(waypointMovement.CurrentTargetIndex, out float3 waypointPosition))
+                {
+                    EntityManager.AddComponentData(e, new MoveForwardComponent { Target = waypointPosition });
+                }
+                else
+                {
+                    EntityManager.RemoveComponent<WaypointMovementComponent>(e);
+                }
             }
 
             entities.Dispose();

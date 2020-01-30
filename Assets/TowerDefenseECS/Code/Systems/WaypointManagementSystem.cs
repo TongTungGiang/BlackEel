@@ -4,7 +4,6 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Transforms;
-using static Unity.Mathematics.math;
 
 namespace BE.ECS
 {
@@ -22,14 +21,21 @@ namespace BE.ECS
             // Do nothing
         }
 
-        public float3 GetWaypointPosition(int index)
+        public bool GetWaypointPosition(int index, out float3 position)
         {
             m_Query.SetFilter(new WaypointIndexComponent() { Value = index });
             var queryResultEntities = m_Query.ToEntityArray(Allocator.TempJob);
-            float3 position = EntityManager.GetComponentData<Translation>(queryResultEntities[0]).Value;
-            queryResultEntities.Dispose();
 
-            return position;
+            if (queryResultEntities.Length == 0)
+            {
+                position = float3.zero;
+                queryResultEntities.Dispose();
+                return false;
+            }
+
+            position = EntityManager.GetComponentData<Translation>(queryResultEntities[0]).Value;
+            queryResultEntities.Dispose();
+            return true;
         }
     }
 }

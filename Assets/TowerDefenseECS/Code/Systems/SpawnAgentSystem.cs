@@ -29,7 +29,7 @@ namespace BE.ECS
             }
 
             m_LastSpawn = Time.time;
-            float3 firstWaypointPos = World.GetOrCreateSystem<WaypointManagementSystem>().GetWaypointPosition(0);
+            World.GetOrCreateSystem<WaypointManagementSystem>().GetWaypointPosition(0, out float3 firstWaypointPos);
 
             Entity prefab = GameData.Instance.AgentEntityPrefab;
             Entity instance = EntityManager.Instantiate(prefab);
