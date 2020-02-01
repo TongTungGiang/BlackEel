@@ -16,5 +16,4 @@ public class GameData : Singleton<GameData>
     }
 
     public Entity AgentEntityPrefab { get { return m_AgentEntityPrefab; } }
-
 }

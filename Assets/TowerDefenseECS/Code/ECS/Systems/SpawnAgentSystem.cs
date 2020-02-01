@@ -35,9 +35,13 @@ namespace BE.ECS
             Entity instance = EntityManager.Instantiate(prefab);
             EntityManager.SetName(instance, "Agent");
             EntityManager.AddComponentData(instance, new AgentTag { });
+
             EntityManager.SetComponentData(instance, new Translation { Value = firstWaypointPos });
             EntityManager.AddComponentData(instance, new MoveSpeedComponent { Value = 10 });
+
             EntityManager.AddComponentData(instance, new FollowWaypointTag { });
             EntityManager.AddComponentData(instance, new WaypointMovementComponent { CurrentTargetIndex = 0 });
+
+            EntityManager.AddSharedComponentData(instance, new TeamComponent { IsEnemy = true });
         }
     } }
