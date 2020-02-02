@@ -16,7 +16,7 @@ namespace BE.ECS
         void Start()
         {
             GameData.Instance.RegisterEnemyEntityPrefab(GameObjectConversionUtility.ConvertGameObjectHierarchy(enemy, World.Active));
-            GameData.Instance.RegisterEnemyEntityPrefab(GameObjectConversionUtility.ConvertGameObjectHierarchy(ally, World.Active));
+            GameData.Instance.RegisterAllyEntityPrefab(GameObjectConversionUtility.ConvertGameObjectHierarchy(ally, World.Active));
         }
     }
 }

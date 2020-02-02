@@ -6,12 +6,13 @@ using Unity.Mathematics;
 namespace BE.ECS
 {
     [Serializable]
-    public struct WaypointIndexComponent : ISharedComponentData
+    public struct AllySpawnPointIndexComponent : ISharedComponentData
     {
         public int Value;
     }
 
-    public struct WaypointCountComponent : IComponentData
+    [Serializable]
+    public struct AllySpawnPointCountComponent : IComponentData
     {
         public int Value;
     }

@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace BE.ECS
 {
-    public class SpawnAgentSystem : ComponentSystem
+    public class SpawnEnemySystem : ComponentSystem
     {
         private float m_LastSpawn;
         private float m_SpawnRate;
@@ -33,7 +33,7 @@ namespace BE.ECS
 
             Entity prefab = GameData.Instance.EnemyEntityPrefab;
             Entity instance = EntityManager.Instantiate(prefab);
-            EntityManager.SetName(instance, "Agent");
+            EntityManager.SetName(instance, "Enemy");
             EntityManager.AddComponentData(instance, new AgentTag { });
 
             EntityManager.SetComponentData(instance, new Translation { Value = firstWaypointPos });
