@@ -9,14 +9,14 @@ namespace BE.ECS
 {
     public class AgentPrefabConverter : MonoBehaviour
     {
-        public GameObject cube;
+        public GameObject enemy;
+        public GameObject ally;
 
         // Start is called before the first frame update
         void Start()
         {
-            Entity prefab = GameObjectConversionUtility.ConvertGameObjectHierarchy(cube, World.Active);
-
-            GameData.Instance.RegisterAgentEntityPrefab(prefab);
+            GameData.Instance.RegisterEnemyEntityPrefab(GameObjectConversionUtility.ConvertGameObjectHierarchy(enemy, World.Active));
+            GameData.Instance.RegisterEnemyEntityPrefab(GameObjectConversionUtility.ConvertGameObjectHierarchy(ally, World.Active));
         }
     }
 }

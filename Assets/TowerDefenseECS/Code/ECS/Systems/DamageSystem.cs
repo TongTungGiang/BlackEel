@@ -10,7 +10,7 @@ namespace BE.ECS
 {
     public class DamageSystem : JobComponentSystem
     {
-        [BurstCompile]
+        //[BurstCompile]
         struct DamageSystemJob : IJobForEachWithEntity<DamageComponent, HealthComponent>
         {
             [WriteOnly]
@@ -35,7 +35,10 @@ namespace BE.ECS
         {
             var commandBuffer = m_Barrier.CreateCommandBuffer().ToConcurrent();
             var job = new DamageSystemJob() { CommandBuffer = commandBuffer };
-            return job.Schedule(this, inputDependencies);
+            var jobHandle = job.Schedule(this, inputDependencies);
+            m_Barrier.AddJobHandleForProducer(jobHandle);
+
+            return jobHandle;
         }
     }
 }

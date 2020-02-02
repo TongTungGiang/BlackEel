@@ -972,9 +972,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c757410d1e6ec4f4a85b22aba2880c43, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cube: {fileID: 6978773256155210157, guid: 69bb08dacfe567c48ac59164c90587af, type: 3}
-  number: 0
-  spawnRate: 1
+  enemy: {fileID: 6978773256155210157, guid: 69bb08dacfe567c48ac59164c90587af, type: 3}
+  ally: {fileID: 6978773256155210157, guid: 83e193e3357239348ba66d007d0c91ba, type: 3}
 --- !u!4 &1645205280
 Transform:
   m_ObjectHideFlags: 0
