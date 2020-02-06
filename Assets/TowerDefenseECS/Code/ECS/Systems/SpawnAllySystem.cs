@@ -18,7 +18,7 @@ namespace BE.ECS
         {
             m_SpawnRate = GameData.Instance.spawnRate;
 
-            m_LastSpawn = Time.time;
+            m_LastSpawn = Time.time - m_SpawnRate * 2;
         }
 
         protected override void OnUpdate()
@@ -38,6 +38,8 @@ namespace BE.ECS
 
             EntityManager.SetComponentData(instance, new Translation { Value = firstWaypointPos });
             EntityManager.AddComponentData(instance, new MoveSpeedComponent { Value = 10 });
+
+            EntityManager.AddComponentData(instance, new AttackRadiusComponent { Value = 10 });
 
             EntityManager.AddSharedComponentData(instance, new TeamComponent { IsEnemy = false });
         }
