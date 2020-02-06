@@ -37,9 +37,9 @@ namespace BE.ECS
             EntityManager.AddComponentData(instance, new AgentTag { });
 
             EntityManager.SetComponentData(instance, new Translation { Value = firstWaypointPos });
-            EntityManager.AddComponentData(instance, new MoveSpeedComponent { Value = 10 });
+            EntityManager.AddComponentData(instance, new MoveSpeedComponent { Value = GameData.Instance.agentMoveSpeed });
 
-            EntityManager.AddComponentData(instance, new AttackRadiusComponent { Value = 10 });
+            EntityManager.AddComponentData(instance, new AttackRadiusComponent { Value = GameData.Instance.agentScanRadius });
 
             EntityManager.AddSharedComponentData(instance, new AllyTeamComponent());
         }

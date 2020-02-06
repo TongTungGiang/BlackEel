@@ -26,4 +26,7 @@ public class GameData : Singleton<GameData>
     }
 
     public Entity AllyEntityPrefab { get { return m_AllyEntityPrefab; } }
+
+    public float agentMoveSpeed;
+    public float agentScanRadius;
 }
