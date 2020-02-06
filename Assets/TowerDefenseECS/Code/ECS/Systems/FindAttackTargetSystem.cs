@@ -4,25 +4,27 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Transforms;
+using UnityEngine;
 
 namespace BE.ECS
 {
     public class FindAttackTargetSystem : JobComponentSystem
     {
-        private EntityQueryDesc m_QueryDesc;
-        private EntityQuery m_AllyQuery;
-        private EntityQuery m_EnemyQuery;
+        private EntityQuery m_Ally_NoAttackTarget;
+        private EntityQuery m_Enemy_NoAttackTarget;
+        private EntityQuery m_Ally_All;
+        private EntityQuery m_Enemy_All;
         EntityCommandBufferSystem m_Barrier;
 
         protected override void OnCreate()
         {
-            m_QueryDesc = new EntityQueryDesc
+            EntityQueryDesc allyWithoutAttackTarget = new EntityQueryDesc
             {
                 All = new ComponentType[]
                 {
                     ComponentType.ReadOnly<AgentTag>(),
                     ComponentType.ReadOnly<Translation>(),
-                    ComponentType.ReadOnly<TeamComponent>()
+                    ComponentType.ReadOnly<AllyTeamComponent>()
                 },
 
                 None = new ComponentType[]
@@ -30,12 +32,45 @@ namespace BE.ECS
                     typeof(AttackTargetComponent)
                 },
             };
+            m_Ally_NoAttackTarget = GetEntityQuery(allyWithoutAttackTarget);
 
-            m_AllyQuery = GetEntityQuery(m_QueryDesc);
-            m_AllyQuery.SetFilter(new TeamComponent { IsEnemy = false });
+            EntityQueryDesc enemyWithoutAttackTarget = new EntityQueryDesc
+            {
+                All = new ComponentType[]
+                {
+                    ComponentType.ReadOnly<AgentTag>(),
+                    ComponentType.ReadOnly<Translation>(),
+                    ComponentType.ReadOnly<EnemyTeamComponent>()
+                },
 
-            m_EnemyQuery = GetEntityQuery(m_QueryDesc);
-            m_EnemyQuery.SetFilter(new TeamComponent { IsEnemy = true });
+                None = new ComponentType[]
+                {
+                    typeof(AttackTargetComponent)
+                },
+            };
+            m_Enemy_NoAttackTarget = GetEntityQuery(enemyWithoutAttackTarget);
+
+            EntityQueryDesc allAlly = new EntityQueryDesc
+            {
+                All = new ComponentType[]
+                {
+                    ComponentType.ReadOnly<AgentTag>(),
+                    ComponentType.ReadOnly<Translation>(),
+                    ComponentType.ReadOnly<AllyTeamComponent>()
+                }
+            };
+            m_Ally_All = GetEntityQuery(allAlly);
+
+            EntityQueryDesc allEnemy = new EntityQueryDesc
+            {
+                All = new ComponentType[]
+                {
+                    ComponentType.ReadOnly<AgentTag>(),
+                    ComponentType.ReadOnly<Translation>(),
+                    ComponentType.ReadOnly<EnemyTeamComponent>()
+                }
+            };
+            m_Enemy_All = GetEntityQuery(allEnemy);
 
             m_Barrier = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
         }
@@ -70,9 +105,9 @@ namespace BE.ECS
 
                         if (CheckInRange(targetPos.Value, pos.Value, radius.Value * radius.Value))
                         {
-                            var attackTarget = EntityToTestAgainst[j];
-                            var attackTargetComponent = new AttackTargetComponent { Target = attackTarget };
+                            var attackTargetComponent = new AttackTargetComponent { Target = EntityToTestAgainst[j] };
                             CommandBuffer.AddComponent(chunkIndex, chunkEntities[i], attackTargetComponent);
+                            Debug.LogFormat("{0} found target: {1}", chunkEntities[i].Index, EntityToTestAgainst[j].Index);
                             break;
                         }
                     }
@@ -82,6 +117,21 @@ namespace BE.ECS
 
         protected override JobHandle OnUpdate(JobHandle inputDependencies)
         {
+            {
+                NativeArray<Entity> alliesAll = m_Ally_All.ToEntityArray(Allocator.TempJob);
+
+                NativeArray<Entity> alliesNoTarget = m_Ally_NoAttackTarget.ToEntityArray(Allocator.TempJob);
+
+                NativeArray<Entity> enemyAll = m_Enemy_All.ToEntityArray(Allocator.TempJob);
+
+                NativeArray<Entity> enemyNoTarget = m_Enemy_NoAttackTarget.ToEntityArray(Allocator.TempJob);
+
+                alliesAll.Dispose();
+                alliesNoTarget.Dispose();
+                enemyAll.Dispose();
+                enemyNoTarget.Dispose();
+            }
+
             var commandBuffer = m_Barrier.CreateCommandBuffer().ToConcurrent();
 
             var radiusType = GetArchetypeChunkComponentType<AttackRadiusComponent>(true);
@@ -90,25 +140,25 @@ namespace BE.ECS
 
             var jobEvA = new RangeQueryJob()
             {
-                TranslationToTestAgainst = m_AllyQuery.ToComponentDataArray<Translation>(Allocator.TempJob),
-                EntityToTestAgainst = m_AllyQuery.ToEntityArray(Allocator.TempJob),
+                TranslationToTestAgainst = m_Ally_All.ToComponentDataArray<Translation>(Allocator.TempJob),
+                EntityToTestAgainst = m_Ally_All.ToEntityArray(Allocator.TempJob),
                 AttackRadiusType = radiusType,
                 TranslationType = translationType,
                 EntityType = entityType,
                 CommandBuffer = commandBuffer
             };
-            JobHandle jobHandleEvA = jobEvA.Schedule(m_EnemyQuery, inputDependencies);
+            JobHandle jobHandleEvA = jobEvA.Schedule(m_Enemy_NoAttackTarget, inputDependencies);
 
             var jobAvE = new RangeQueryJob()
             {
-                TranslationToTestAgainst = m_EnemyQuery.ToComponentDataArray<Translation>(Allocator.TempJob),
-                EntityToTestAgainst = m_EnemyQuery.ToEntityArray(Allocator.TempJob),
+                TranslationToTestAgainst = m_Enemy_All.ToComponentDataArray<Translation>(Allocator.TempJob),
+                EntityToTestAgainst = m_Enemy_All.ToEntityArray(Allocator.TempJob),
                 AttackRadiusType = radiusType,
                 TranslationType = translationType,
                 EntityType = entityType,
                 CommandBuffer = commandBuffer
             };
-            JobHandle jobHandleAvE = jobAvE.Schedule(m_AllyQuery, jobHandleEvA);
+            JobHandle jobHandleAvE = jobAvE.Schedule(m_Ally_NoAttackTarget, jobHandleEvA);
 
             return jobHandleAvE;
         }

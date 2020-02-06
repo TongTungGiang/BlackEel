@@ -44,7 +44,7 @@ namespace BE.ECS
 
             EntityManager.AddComponentData(instance, new AttackRadiusComponent { Value = 10 });
 
-            EntityManager.AddSharedComponentData(instance, new TeamComponent { IsEnemy = true });
+            EntityManager.AddSharedComponentData(instance, new EnemyTeamComponent());
         }
     }
 }

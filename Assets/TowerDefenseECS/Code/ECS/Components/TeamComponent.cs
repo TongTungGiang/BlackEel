@@ -6,8 +6,8 @@ using Unity.Mathematics;
 namespace BE.ECS
 {
     [Serializable]
-    public struct TeamComponent : ISharedComponentData
-    {
-        public bool IsEnemy;
-    }
+    public struct EnemyTeamComponent : ISharedComponentData { }
+
+    [Serializable]
+    public struct AllyTeamComponent : ISharedComponentData { }
 }
