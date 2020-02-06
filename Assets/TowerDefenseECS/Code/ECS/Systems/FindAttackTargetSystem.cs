@@ -17,7 +17,7 @@ namespace BE.ECS
         {
             m_QueryDesc = new EntityQueryDesc
             {
-                All = new ComponentType[] { ComponentType.ReadOnly<AgentTag>(), ComponentType.ReadOnly<Translation>(), typeof(TeamComponent)  },
+                All = new ComponentType[] { ComponentType.ReadOnly<AgentTag>(), ComponentType.ReadOnly<Translation>(), ComponentType.ReadOnly<TeamComponent>() },
             };
 
             allyQuery = GetEntityQuery(m_QueryDesc);
@@ -45,7 +45,7 @@ namespace BE.ECS
                     AttackRadiusComponent radius = chunkAttackRadius[i];
                     Translation pos = chunkTranslations[i];
 
-                    for (int j = 0; j < TranslationToTestAgainst.Length; i++)
+                    for (int j = 0; j < TranslationToTestAgainst.Length; j++)
                     {
                         Translation targetPos = TranslationToTestAgainst[j];
 
