@@ -10,35 +10,54 @@ namespace BE.ECS
     public class FindAttackTargetSystem : JobComponentSystem
     {
         private EntityQueryDesc m_QueryDesc;
-        private EntityQuery allyQuery;
-        private EntityQuery enemyQuery;
+        private EntityQuery m_AllyQuery;
+        private EntityQuery m_EnemyQuery;
+        EntityCommandBufferSystem m_Barrier;
 
         protected override void OnCreate()
         {
             m_QueryDesc = new EntityQueryDesc
             {
-                All = new ComponentType[] { ComponentType.ReadOnly<AgentTag>(), ComponentType.ReadOnly<Translation>(), ComponentType.ReadOnly<TeamComponent>() },
+                All = new ComponentType[]
+                {
+                    ComponentType.ReadOnly<AgentTag>(),
+                    ComponentType.ReadOnly<Translation>(),
+                    ComponentType.ReadOnly<TeamComponent>()
+                },
+
+                None = new ComponentType[]
+                {
+                    typeof(AttackTargetComponent)
+                },
             };
 
-            allyQuery = GetEntityQuery(m_QueryDesc);
-            allyQuery.SetFilter(new TeamComponent { IsEnemy = false });
+            m_AllyQuery = GetEntityQuery(m_QueryDesc);
+            m_AllyQuery.SetFilter(new TeamComponent { IsEnemy = false });
 
-            enemyQuery = GetEntityQuery(m_QueryDesc);
-            enemyQuery.SetFilter(new TeamComponent { IsEnemy = true });
+            m_EnemyQuery = GetEntityQuery(m_QueryDesc);
+            m_EnemyQuery.SetFilter(new TeamComponent { IsEnemy = true });
+
+            m_Barrier = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
         }
 
         struct RangeQueryJob : IJobChunk
         {
-            [DeallocateOnJobCompletion, ReadOnly]
-            public NativeArray<Translation> TranslationToTestAgainst;
+            [DeallocateOnJobCompletion]
+            [ReadOnly] public NativeArray<Translation> TranslationToTestAgainst;
+            [DeallocateOnJobCompletion]
+            [ReadOnly] public NativeArray<Entity> EntityToTestAgainst;
 
             [ReadOnly] public ArchetypeChunkComponentType<AttackRadiusComponent> AttackRadiusType;
             [ReadOnly] public ArchetypeChunkComponentType<Translation> TranslationType;
+            [ReadOnly] public ArchetypeChunkEntityType EntityType;
+
+            [WriteOnly] public EntityCommandBuffer.Concurrent CommandBuffer;
 
             public void Execute(ArchetypeChunk chunk, int chunkIndex, int firstEntityIndex)
             {
                 var chunkAttackRadius = chunk.GetNativeArray(AttackRadiusType);
                 var chunkTranslations = chunk.GetNativeArray(TranslationType);
+                var chunkEntities = chunk.GetNativeArray(EntityType);
 
                 for (int i = 0; i < chunk.Count; i++)
                 {
@@ -51,7 +70,10 @@ namespace BE.ECS
 
                         if (CheckInRange(targetPos.Value, pos.Value, radius.Value * radius.Value))
                         {
-                            UnityEngine.Debug.LogFormat("{0} finds {1} in range", i, j);
+                            var attackTarget = EntityToTestAgainst[j];
+                            var attackTargetComponent = new AttackTargetComponent { Target = attackTarget };
+                            CommandBuffer.AddComponent(chunkIndex, chunkEntities[i], attackTargetComponent);
+                            break;
                         }
                     }
                 }
@@ -60,25 +82,33 @@ namespace BE.ECS
 
         protected override JobHandle OnUpdate(JobHandle inputDependencies)
         {
+            var commandBuffer = m_Barrier.CreateCommandBuffer().ToConcurrent();
 
             var radiusType = GetArchetypeChunkComponentType<AttackRadiusComponent>(true);
             var translationType = GetArchetypeChunkComponentType<Translation>(true);
+            var entityType = GetArchetypeChunkEntityType();
 
             var jobEvA = new RangeQueryJob()
             {
-                TranslationToTestAgainst = allyQuery.ToComponentDataArray<Translation>(Allocator.TempJob),
+                TranslationToTestAgainst = m_AllyQuery.ToComponentDataArray<Translation>(Allocator.TempJob),
+                EntityToTestAgainst = m_AllyQuery.ToEntityArray(Allocator.TempJob),
                 AttackRadiusType = radiusType,
-                TranslationType = translationType
+                TranslationType = translationType,
+                EntityType = entityType,
+                CommandBuffer = commandBuffer
             };
-            JobHandle jobHandleEvA = jobEvA.Schedule(enemyQuery, inputDependencies);
+            JobHandle jobHandleEvA = jobEvA.Schedule(m_EnemyQuery, inputDependencies);
 
             var jobAvE = new RangeQueryJob()
             {
-                TranslationToTestAgainst = enemyQuery.ToComponentDataArray<Translation>(Allocator.TempJob),
+                TranslationToTestAgainst = m_EnemyQuery.ToComponentDataArray<Translation>(Allocator.TempJob),
+                EntityToTestAgainst = m_EnemyQuery.ToEntityArray(Allocator.TempJob),
                 AttackRadiusType = radiusType,
-                TranslationType = translationType
+                TranslationType = translationType,
+                EntityType = entityType,
+                CommandBuffer = commandBuffer
             };
-            JobHandle jobHandleAvE = jobAvE.Schedule(allyQuery, jobHandleEvA);
+            JobHandle jobHandleAvE = jobAvE.Schedule(m_AllyQuery, jobHandleEvA);
 
             return jobHandleAvE;
         }
