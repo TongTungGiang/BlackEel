@@ -117,21 +117,6 @@ namespace BE.ECS
 
         protected override JobHandle OnUpdate(JobHandle inputDependencies)
         {
-            {
-                NativeArray<Entity> alliesAll = m_Ally_All.ToEntityArray(Allocator.TempJob);
-
-                NativeArray<Entity> alliesNoTarget = m_Ally_NoAttackTarget.ToEntityArray(Allocator.TempJob);
-
-                NativeArray<Entity> enemyAll = m_Enemy_All.ToEntityArray(Allocator.TempJob);
-
-                NativeArray<Entity> enemyNoTarget = m_Enemy_NoAttackTarget.ToEntityArray(Allocator.TempJob);
-
-                alliesAll.Dispose();
-                alliesNoTarget.Dispose();
-                enemyAll.Dispose();
-                enemyNoTarget.Dispose();
-            }
-
             var commandBuffer = m_Barrier.CreateCommandBuffer().ToConcurrent();
 
             var radiusType = GetArchetypeChunkComponentType<AttackRadiusComponent>(true);
