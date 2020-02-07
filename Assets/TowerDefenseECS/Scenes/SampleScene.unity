@@ -1275,7 +1275,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spawnRate: 1
   agentMoveSpeed: 15
-  agentScanRadius: 20
+  agentScanRadius: 30
 --- !u!4 &1154472859
 Transform:
   m_ObjectHideFlags: 0
