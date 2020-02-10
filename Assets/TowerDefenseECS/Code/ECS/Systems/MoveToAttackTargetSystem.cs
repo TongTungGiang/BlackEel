@@ -17,6 +17,7 @@ namespace BE.ECS
             [ReadOnly] public ArchetypeChunkEntityType EntityType;
             [ReadOnly] public ArchetypeChunkComponentType<MoveForwardComponent> MoveForwardType;
             [ReadOnly] public ArchetypeChunkComponentType<AttackTargetComponent> AttackTargetType;
+            [ReadOnly] public ComponentDataFromEntity<Translation> AllTranslation;
 
             [WriteOnly] public EntityCommandBuffer.Concurrent CommandBuffer;
 
@@ -30,7 +31,7 @@ namespace BE.ECS
                     for (int i = 0; i < chunk.Count; i++)
                     {
                         Entity target = chunkTarget[i].Target;
-                        float3 targetPos = float3.zero;
+                        float3 targetPos = AllTranslation[target].Value;
                         CommandBuffer.SetComponent<MoveForwardComponent>(
                             chunkIndex,
                             chunkEntities[i],
@@ -42,7 +43,7 @@ namespace BE.ECS
                     for (int i = 0; i < chunk.Count; i++)
                     {
                         Entity target = chunkTarget[i].Target;
-                        float3 targetPos = float3.zero;
+                        float3 targetPos = AllTranslation[target].Value;
                         CommandBuffer.AddComponent<MoveForwardComponent>(
                             chunkIndex,
                             chunkEntities[i],
@@ -75,13 +76,14 @@ namespace BE.ECS
             var attackTargetType = GetArchetypeChunkComponentType<AttackTargetComponent>(true);
             var moveForwardType = GetArchetypeChunkComponentType<MoveForwardComponent>(false);
             var entityType = GetArchetypeChunkEntityType();
-
+            var allTranslation = GetComponentDataFromEntity<Translation>(true);
 
             var job = new MoveToAttackTargetSystemJob()
             {
                 EntityType = entityType,
                 AttackTargetType = attackTargetType,
                 MoveForwardType = moveForwardType,
+                AllTranslation = allTranslation,
                 CommandBuffer = commandBuffer
             };
 

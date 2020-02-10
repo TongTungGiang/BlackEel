@@ -107,7 +107,6 @@ namespace BE.ECS
                         {
                             var attackTargetComponent = new AttackTargetComponent { Target = EntityToTestAgainst[j] };
                             CommandBuffer.AddComponent(chunkIndex, chunkEntities[i], attackTargetComponent);
-                            Debug.LogFormat("{0} found target: {1}", chunkEntities[i].Index, EntityToTestAgainst[j].Index);
                             break;
                         }
                     }
