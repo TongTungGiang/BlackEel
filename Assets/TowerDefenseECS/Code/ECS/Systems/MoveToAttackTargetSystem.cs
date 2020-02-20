@@ -9,7 +9,8 @@ namespace BE.ECS
 {
     public class MoveToAttackTargetSystem : JobComponentSystem
     {
-        private EntityQuery m_AgentGroup;
+        private EntityQuery m_AllyGroup;
+        private EntityQuery m_EnemyGroup;
         private EntityCommandBufferSystem m_Barrier;
 
         struct MoveToAttackTargetSystemJob : IJobChunk
@@ -17,6 +18,8 @@ namespace BE.ECS
             [ReadOnly] public ArchetypeChunkEntityType EntityType;
             [ReadOnly] public ArchetypeChunkComponentType<MoveForwardComponent> MoveForwardType;
             [ReadOnly] public ArchetypeChunkComponentType<AttackTargetComponent> AttackTargetType;
+            [ReadOnly] public ArchetypeChunkSharedComponentType<EnemyTeamComponent> EnemyType;
+
             [ReadOnly] public ComponentDataFromEntity<Translation> AllTranslation;
 
             [WriteOnly] public EntityCommandBuffer.Concurrent CommandBuffer;
@@ -50,12 +53,20 @@ namespace BE.ECS
                             new MoveForwardComponent() { Target = targetPos });
                     }
                 }
+
+                if (chunk.Has(EnemyType))
+                {
+                    for (int i = 0; i < chunk.Count; i++)
+                    {
+                        CommandBuffer.RemoveComponent<FollowWaypointTag>(chunkIndex, chunkEntities[i]);
+                    }
+                }
             }
         }
 
         protected override void OnCreate()
         {
-            EntityQueryDesc queryDesc = new EntityQueryDesc()
+            EntityQueryDesc allyQueryDesc = new EntityQueryDesc()
             {
                 All = new ComponentType[]
                 {
@@ -64,7 +75,18 @@ namespace BE.ECS
                     ComponentType.ReadOnly<AttackTargetComponent>(),
                 }
             };
-            m_AgentGroup = GetEntityQuery(queryDesc);
+            m_AllyGroup = GetEntityQuery(allyQueryDesc);
+
+            EntityQueryDesc enemyQueryDesc = new EntityQueryDesc()
+            {
+                All = new ComponentType[]
+                {
+                    ComponentType.ReadOnly<AgentTag>(),
+                    ComponentType.ReadOnly<EnemyTeamComponent>(),
+                    ComponentType.ReadOnly<AttackTargetComponent>(),
+                }
+            };
+            m_EnemyGroup = GetEntityQuery(enemyQueryDesc);
 
             m_Barrier = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
         }
@@ -75,23 +97,36 @@ namespace BE.ECS
 
             var attackTargetType = GetArchetypeChunkComponentType<AttackTargetComponent>(true);
             var moveForwardType = GetArchetypeChunkComponentType<MoveForwardComponent>(false);
+            var enemyType = GetArchetypeChunkSharedComponentType<EnemyTeamComponent>();
             var entityType = GetArchetypeChunkEntityType();
             var allTranslation = GetComponentDataFromEntity<Translation>(true);
 
-            var job = new MoveToAttackTargetSystemJob()
+            var allyJob = new MoveToAttackTargetSystemJob()
             {
                 EntityType = entityType,
                 AttackTargetType = attackTargetType,
                 MoveForwardType = moveForwardType,
                 AllTranslation = allTranslation,
+                EnemyType = enemyType,
                 CommandBuffer = commandBuffer
             };
+            var allyJobHandle = allyJob.Schedule(m_AllyGroup, inputDependencies);
 
-            // Now that the job is set up, schedule it to be run. 
-            var jobHandle = job.Schedule(m_AgentGroup, inputDependencies);
-            m_Barrier.AddJobHandleForProducer(jobHandle);
+            var enemyJob = new MoveToAttackTargetSystemJob()
+            {
+                EntityType = entityType,
+                AttackTargetType = attackTargetType,
+                MoveForwardType = moveForwardType,
+                EnemyType = enemyType,
+                AllTranslation = allTranslation,
+                CommandBuffer = commandBuffer
+            };
+            var enemyJobHandle = enemyJob.Schedule(m_EnemyGroup, allyJobHandle);
 
-            return jobHandle;
+            m_Barrier.AddJobHandleForProducer(allyJobHandle);
+            m_Barrier.AddJobHandleForProducer(enemyJobHandle);
+
+            return enemyJobHandle;
         }
     }
 }

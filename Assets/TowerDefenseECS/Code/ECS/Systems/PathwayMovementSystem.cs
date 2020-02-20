@@ -17,7 +17,7 @@ namespace BE.ECS
             EntityQueryDesc desc = new EntityQueryDesc()
             {
                 All = new ComponentType[] { typeof(WaypointMovementComponent), typeof(FollowWaypointTag) },
-                None = new ComponentType[] { typeof(MoveForwardComponent) }
+                None = new ComponentType[] { typeof(MoveForwardComponent), typeof(AttackTargetComponent) }
             };
             m_Query = GetEntityQuery(desc);
         }
