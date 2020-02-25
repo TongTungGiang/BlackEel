@@ -7,6 +7,7 @@ using Unity.Transforms;
 
 namespace BE.ECS
 {
+    [UpdateBefore(typeof(MoveForwardSystem))]
     public class MoveToAttackTargetSystem : JobComponentSystem
     {
         private EntityQuery m_AllyGroup;
@@ -111,6 +112,7 @@ namespace BE.ECS
                 CommandBuffer = commandBuffer
             };
             var allyJobHandle = allyJob.Schedule(m_AllyGroup, inputDependencies);
+            m_Barrier.AddJobHandleForProducer(allyJobHandle);
 
             var enemyJob = new MoveToAttackTargetSystemJob()
             {
@@ -122,8 +124,6 @@ namespace BE.ECS
                 CommandBuffer = commandBuffer
             };
             var enemyJobHandle = enemyJob.Schedule(m_EnemyGroup, allyJobHandle);
-
-            m_Barrier.AddJobHandleForProducer(allyJobHandle);
             m_Barrier.AddJobHandleForProducer(enemyJobHandle);
 
             return enemyJobHandle;
