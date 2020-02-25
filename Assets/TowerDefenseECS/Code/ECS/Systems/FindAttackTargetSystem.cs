@@ -152,8 +152,7 @@ namespace BE.ECS
             float3 delta = target - center;
             float distanceSquare = delta.x * delta.x + delta.z * delta.z;
 
-            return distanceSquare <= radiusSqr &&
-                distanceSquare >= StoppingDistanceSquare;
+            return distanceSquare <= radiusSqr;
         }
 
         private static float StoppingDistanceSquare

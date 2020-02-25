@@ -38,9 +38,7 @@ namespace BE.ECS
                     {
                         Entity target = chunkTarget[i].Target;
                         float3 targetPos = AllTranslation[target].Value;
-                        CommandBuffer.SetComponent<MoveForwardComponent>(
-                            chunkIndex,
-                            chunkEntities[i],
+                        CommandBuffer.SetComponent(chunkIndex, chunkEntities[i],
                             new MoveForwardComponent() { Target = GetStopPosition(chunkTranslation[i].Value, targetPos) });
                     }
                 }
@@ -50,10 +48,13 @@ namespace BE.ECS
                     {
                         Entity target = chunkTarget[i].Target;
                         float3 targetPos = AllTranslation[target].Value;
-                        CommandBuffer.AddComponent<MoveForwardComponent>(
-                            chunkIndex,
-                            chunkEntities[i],
-                            new MoveForwardComponent() { Target = GetStopPosition(chunkTranslation[i].Value, targetPos) });
+
+                        float3 delta = chunkTranslation[i].Value - targetPos;
+                        if (math.lengthsq(delta) > StoppingDistanceSquare)
+                        {
+                            CommandBuffer.AddComponent(chunkIndex, chunkEntities[i],
+                                new MoveForwardComponent() { Target = GetStopPosition(chunkTranslation[i].Value, targetPos) });
+                        }
                     }
                 }
 
@@ -71,6 +72,20 @@ namespace BE.ECS
                 float3 enemyToPlayer = myPosition - enemyPosition;
                 return enemyPosition + math.normalize(enemyToPlayer) * GameData.Instance.agentStoppingDistance;
             }
+
+            private static float StoppingDistanceSquare
+            {
+                get
+                {
+                    if (_stoppingDistanceSquare < 0)
+                    {
+                        _stoppingDistanceSquare = GameData.Instance.agentStoppingDistance * GameData.Instance.agentStoppingDistance;
+                    }
+
+                    return _stoppingDistanceSquare;
+                }
+            }
+            private static float _stoppingDistanceSquare = -1;
         }
 
         protected override void OnCreate()
