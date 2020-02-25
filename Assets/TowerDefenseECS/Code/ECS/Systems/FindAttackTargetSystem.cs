@@ -153,7 +153,21 @@ namespace BE.ECS
             float distanceSquare = delta.x * delta.x + delta.z * delta.z;
 
             return distanceSquare <= radiusSqr &&
-                distanceSquare >= GameData.Instance.agentStoppingDistance * GameData.Instance.agentStoppingDistance;
+                distanceSquare >= StoppingDistanceSquare;
         }
+
+        private static float StoppingDistanceSquare
+        {
+            get
+            {
+                if (_stoppingDistanceSquare < 0)
+                {
+                    _stoppingDistanceSquare = GameData.Instance.agentStoppingDistance * GameData.Instance.agentStoppingDistance;
+                }
+
+                return _stoppingDistanceSquare;
+            }
+        }
+        private static float _stoppingDistanceSquare = -1;
     }
 }
