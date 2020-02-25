@@ -12,14 +12,14 @@ namespace BE.ECS
 {
     public class MoveForwardSystem : JobComponentSystem
     {
-        struct MoveForwardJob : IJobForEachWithEntity<Translation, MoveForwardComponent, MoveSpeedComponent>
+        struct MoveForwardJob : IJobForEachWithEntity<Translation, Rotation, MoveForwardComponent, MoveSpeedComponent>
         {
             public float DeltaTime;
 
             [WriteOnly]
             public EntityCommandBuffer.Concurrent CommandBuffer;
 
-            public void Execute(Entity entity, int index, ref Translation t, ref MoveForwardComponent mf, ref MoveSpeedComponent ms)
+            public void Execute(Entity entity, int index, ref Translation t, ref Rotation r, ref MoveForwardComponent mf, ref MoveSpeedComponent ms)
             {
                 float3 position = t.Value;
                 float3 direction = mf.Target - position;
@@ -36,8 +36,10 @@ namespace BE.ECS
                 }
 
                 t.Value = position;
+
+                r.Value = quaternion.LookRotation(direction, math.up());
             }
-        }
+        }        
 
         EntityCommandBufferSystem m_Barrier;
 
