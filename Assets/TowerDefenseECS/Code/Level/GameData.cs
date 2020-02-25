@@ -29,4 +29,5 @@ public class GameData : Singleton<GameData>
 
     public float agentMoveSpeed;
     public float agentScanRadius;
+    public float agentStoppingDistance;
 }

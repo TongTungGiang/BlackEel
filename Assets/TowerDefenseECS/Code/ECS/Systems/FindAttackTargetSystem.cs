@@ -152,7 +152,8 @@ namespace BE.ECS
             float3 delta = target - center;
             float distanceSquare = delta.x * delta.x + delta.z * delta.z;
 
-            return distanceSquare <= radiusSqr;
+            return distanceSquare <= radiusSqr &&
+                distanceSquare >= GameData.Instance.agentStoppingDistance * GameData.Instance.agentStoppingDistance;
         }
     }
 }

@@ -19,6 +19,7 @@ namespace BE.ECS
             [ReadOnly] public ArchetypeChunkEntityType EntityType;
             [ReadOnly] public ArchetypeChunkComponentType<MoveForwardComponent> MoveForwardType;
             [ReadOnly] public ArchetypeChunkComponentType<AttackTargetComponent> AttackTargetType;
+            [ReadOnly] public ArchetypeChunkComponentType<Translation> TranslationType;
             [ReadOnly] public ArchetypeChunkSharedComponentType<EnemyTeamComponent> EnemyType;
 
             [ReadOnly] public ComponentDataFromEntity<Translation> AllTranslation;
@@ -28,6 +29,7 @@ namespace BE.ECS
             public void Execute(ArchetypeChunk chunk, int chunkIndex, int firstEntityIndex)
             {
                 var chunkEntities = chunk.GetNativeArray(EntityType);
+                var chunkTranslation = chunk.GetNativeArray(TranslationType);
                 var chunkTarget = chunk.GetNativeArray(AttackTargetType);
 
                 if (chunk.Has(MoveForwardType))
@@ -39,7 +41,7 @@ namespace BE.ECS
                         CommandBuffer.SetComponent<MoveForwardComponent>(
                             chunkIndex,
                             chunkEntities[i],
-                            new MoveForwardComponent() { Target = targetPos });
+                            new MoveForwardComponent() { Target = GetStopPosition(chunkTranslation[i].Value, targetPos) });
                     }
                 }
                 else
@@ -51,7 +53,7 @@ namespace BE.ECS
                         CommandBuffer.AddComponent<MoveForwardComponent>(
                             chunkIndex,
                             chunkEntities[i],
-                            new MoveForwardComponent() { Target = targetPos });
+                            new MoveForwardComponent() { Target = GetStopPosition(chunkTranslation[i].Value, targetPos) });
                     }
                 }
 
@@ -62,6 +64,12 @@ namespace BE.ECS
                         CommandBuffer.RemoveComponent<FollowWaypointTag>(chunkIndex, chunkEntities[i]);
                     }
                 }
+            }
+
+            private float3 GetStopPosition(float3 myPosition, float3 enemyPosition)
+            {
+                float3 enemyToPlayer = myPosition - enemyPosition;
+                return enemyPosition + math.normalize(enemyToPlayer) * GameData.Instance.agentStoppingDistance;
             }
         }
 
@@ -96,6 +104,7 @@ namespace BE.ECS
         {
             var commandBuffer = m_Barrier.CreateCommandBuffer().ToConcurrent();
 
+            var translationType = GetArchetypeChunkComponentType<Translation>(true);
             var attackTargetType = GetArchetypeChunkComponentType<AttackTargetComponent>(true);
             var moveForwardType = GetArchetypeChunkComponentType<MoveForwardComponent>(false);
             var enemyType = GetArchetypeChunkSharedComponentType<EnemyTeamComponent>();
@@ -107,6 +116,7 @@ namespace BE.ECS
                 EntityType = entityType,
                 AttackTargetType = attackTargetType,
                 MoveForwardType = moveForwardType,
+                TranslationType = translationType,
                 AllTranslation = allTranslation,
                 EnemyType = enemyType,
                 CommandBuffer = commandBuffer
@@ -119,6 +129,7 @@ namespace BE.ECS
                 EntityType = entityType,
                 AttackTargetType = attackTargetType,
                 MoveForwardType = moveForwardType,
+                TranslationType = translationType,
                 EnemyType = enemyType,
                 AllTranslation = allTranslation,
                 CommandBuffer = commandBuffer
