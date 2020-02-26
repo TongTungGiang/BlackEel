@@ -45,6 +45,9 @@ namespace BE.ECS
             EntityManager.AddComponentData(instance, new AttackRadiusComponent { Value = GameData.Instance.agentScanRadius });
 
             EntityManager.AddSharedComponentData(instance, new EnemyTeamComponent());
+
+            EntityManager.AddComponentData(instance, new HealthComponent { Value = GameData.Instance.agentInitialHealth });
+            EntityManager.AddSharedComponentData(instance, new MaxHealthComponent { Value = GameData.Instance.agentInitialHealth });
         }
     }
 }
