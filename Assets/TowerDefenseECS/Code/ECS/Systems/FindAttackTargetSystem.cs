@@ -57,6 +57,10 @@ namespace BE.ECS
                     ComponentType.ReadOnly<AgentTag>(),
                     ComponentType.ReadOnly<Translation>(),
                     ComponentType.ReadOnly<AllyTeamComponent>()
+                },
+                None = new ComponentType[]
+                {
+                    ComponentType.ReadOnly<OccupiedAsTargetTag>()
                 }
             };
             m_Ally_All = GetEntityQuery(allAlly);
@@ -68,6 +72,10 @@ namespace BE.ECS
                     ComponentType.ReadOnly<AgentTag>(),
                     ComponentType.ReadOnly<Translation>(),
                     ComponentType.ReadOnly<EnemyTeamComponent>()
+                },
+                None = new ComponentType[]
+                {
+                    ComponentType.ReadOnly<OccupiedAsTargetTag>()
                 }
             };
             m_Enemy_All = GetEntityQuery(allEnemy);
@@ -107,6 +115,8 @@ namespace BE.ECS
                         {
                             var attackTargetComponent = new AttackTargetComponent { Target = EntityToTestAgainst[j] };
                             CommandBuffer.AddComponent(chunkIndex, chunkEntities[i], attackTargetComponent);
+
+                            CommandBuffer.AddComponent(chunkIndex, EntityToTestAgainst[j], new OccupiedAsTargetTag());
                             break;
                         }
                     }
