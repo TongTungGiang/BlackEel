@@ -13,12 +13,15 @@ namespace BE.ECS
     {
         private float m_LastSpawn;
         private float m_SpawnRate;
+        private Unity.Mathematics.Random m_Random;
 
         protected override void OnCreate()
         {
             m_SpawnRate = GameData.Instance.spawnRate;
 
             m_LastSpawn = Time.time - m_SpawnRate * 2;
+
+            m_Random = new Unity.Mathematics.Random((uint)UnityEngine.Random.Range(0, 1000));
         }
 
         protected override void OnUpdate()
@@ -28,23 +31,29 @@ namespace BE.ECS
                 return;
             }
 
-            m_LastSpawn = Time.time;
+            m_LastSpawn = Time.time - m_Random.NextFloat(-GameData.Instance.spawnRateNoise, GameData.Instance.spawnRateNoise);
             World.GetOrCreateSystem<WaypointManagementSystem>().GetWaypointPosition(0, out float3 firstWaypointPos);
 
-            Entity prefab = GameData.Instance.EnemyEntityPrefab;
-            Entity instance = EntityManager.Instantiate(prefab);
-            EntityManager.SetName(instance, "Enemy");
-            EntityManager.AddComponentData(instance, new AgentTag { });
+            int batchCount = GameData.Instance.enemySpawnBatchCount;
+            for (int i = 0; i < batchCount; i++)
+            {
+                var instanceSpawnPos = firstWaypointPos + new float3(m_Random.NextFloat(-GameData.Instance.spawnPositionNoise, GameData.Instance.spawnPositionNoise), 0, m_Random.NextFloat(-GameData.Instance.spawnPositionNoise, GameData.Instance.spawnPositionNoise));
 
-            EntityManager.SetComponentData(instance, new Translation { Value = firstWaypointPos });
-            EntityManager.AddComponentData(instance, new MoveSpeedComponent { Value = GameData.Instance.agentMoveSpeed });
+                Entity prefab = GameData.Instance.EnemyEntityPrefab;
+                Entity instance = EntityManager.Instantiate(prefab);
+                EntityManager.SetName(instance, "Enemy");
+                EntityManager.AddComponentData(instance, new AgentTag { });
 
-            EntityManager.AddComponentData(instance, new FollowWaypointTag { });
-            EntityManager.AddComponentData(instance, new WaypointMovementComponent { CurrentTargetIndex = 0 });
+                EntityManager.SetComponentData(instance, new Translation { Value = instanceSpawnPos });
+                EntityManager.AddComponentData(instance, new MoveSpeedComponent { Value = GameData.Instance.agentMoveSpeed });
 
-            EntityManager.AddComponentData(instance, new AttackRadiusComponent { Value = GameData.Instance.agentScanRadius });
+                EntityManager.AddComponentData(instance, new FollowWaypointTag { });
+                EntityManager.AddComponentData(instance, new WaypointMovementComponent { CurrentTargetIndex = 0 });
 
-            EntityManager.AddSharedComponentData(instance, new EnemyTeamComponent());
+                EntityManager.AddComponentData(instance, new AttackRadiusComponent { Value = GameData.Instance.agentScanRadius });
+
+                EntityManager.AddSharedComponentData(instance, new EnemyTeamComponent());
+            }
 
             EntityManager.AddComponentData(instance, new HealthComponent { Value = GameData.Instance.agentInitialHealth });
             EntityManager.AddSharedComponentData(instance, new MaxHealthComponent { Value = GameData.Instance.agentInitialHealth });

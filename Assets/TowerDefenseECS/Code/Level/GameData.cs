@@ -6,6 +6,11 @@ using Unity.Entities;
 public class GameData : Singleton<GameData>
 {
     public float spawnRate = 1;
+    public float spawnRateNoise = 0.5f;
+    public float spawnPositionNoise = 10;
+
+    public int allySpawnBatchCount = 5;
+    public int enemySpawnBatchCount = 1;
 
     private Entity m_EnemyEntityPrefab = Entity.Null;
 

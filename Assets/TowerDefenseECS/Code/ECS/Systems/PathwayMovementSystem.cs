@@ -10,7 +10,8 @@ namespace BE.ECS
 {
     public class PathwayMovementSystem : ComponentSystem
     {
-        EntityQuery m_Query;
+        private EntityQuery m_Query;
+        private Unity.Mathematics.Random m_Random;
 
         protected override void OnCreate()
         {
@@ -20,6 +21,8 @@ namespace BE.ECS
                 None = new ComponentType[] { typeof(MoveForwardComponent), typeof(AttackTargetComponent) }
             };
             m_Query = GetEntityQuery(desc);
+
+            m_Random = new Unity.Mathematics.Random((uint)UnityEngine.Random.Range(0, 1000));
         }
 
         protected override void OnUpdate()
@@ -34,6 +37,7 @@ namespace BE.ECS
 
                 if (World.GetOrCreateSystem<WaypointManagementSystem>().GetWaypointPosition(waypointMovement.CurrentTargetIndex, out float3 waypointPosition))
                 {
+                    waypointPosition += new float3(m_Random.NextFloat(-GameData.Instance.spawnPositionNoise, GameData.Instance.spawnPositionNoise), 0, m_Random.NextFloat(-GameData.Instance.spawnPositionNoise, GameData.Instance.spawnPositionNoise));
                     EntityManager.AddComponentData(e, new MoveForwardComponent { Target = waypointPosition });
                 }
                 else
