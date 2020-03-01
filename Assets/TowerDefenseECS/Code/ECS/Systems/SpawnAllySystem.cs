@@ -34,10 +34,12 @@ namespace BE.ECS
             m_LastSpawn = Time.time - m_Random.NextFloat(-GameData.Instance.spawnRateNoise, GameData.Instance.spawnRateNoise);
             World.GetOrCreateSystem<SpawnPointManagementSystem>().GetRandomSpawnPointPosition(out float3 spawnPos);
 
-            int batchCount = GameData.Instance.allySpawnBatchCount;
+            int batchCount = m_Random.NextInt(GameData.Instance.allySpawnBatchCountMin, GameData.Instance.allySpawnBatchCountMax);
             for (int i = 0; i < batchCount; i++)
             {
-                float3 instanceSpawnPos = spawnPos + new float3(m_Random.NextFloat(), 0, m_Random.NextFloat(-GameData.Instance.spawnPositionNoise, GameData.Instance.spawnPositionNoise));
+                float3 instanceSpawnPos = spawnPos + 
+                    new float3(m_Random.NextFloat(-GameData.Instance.spawnPositionNoise, GameData.Instance.spawnPositionNoise), 
+                    0, m_Random.NextFloat(-GameData.Instance.spawnPositionNoise, GameData.Instance.spawnPositionNoise));
 
                 Entity prefab = GameData.Instance.AllyEntityPrefab;
                 Entity instance = EntityManager.Instantiate(prefab);
@@ -50,9 +52,9 @@ namespace BE.ECS
                 EntityManager.AddComponentData(instance, new AttackRadiusComponent { Value = GameData.Instance.agentScanRadius });
 
                 EntityManager.AddSharedComponentData(instance, new AllyTeamComponent());
-            }
 
-            EntityManager.AddComponentData(instance, new HealthComponent { Value = GameData.Instance.agentInitialHealth });
-            EntityManager.AddSharedComponentData(instance, new MaxHealthComponent { Value = GameData.Instance.agentInitialHealth });
+                EntityManager.AddComponentData(instance, new HealthComponent { Value = GameData.Instance.agentInitialHealth });
+                EntityManager.AddSharedComponentData(instance, new MaxHealthComponent { Value = GameData.Instance.agentInitialHealth });
+            }
         }
     } }

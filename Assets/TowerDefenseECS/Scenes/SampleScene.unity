@@ -1273,10 +1273,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa6947239e6f0244ba2e517e793e7459, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spawnRate: 1
+  spawnRate: 0.5
+  spawnRateNoise: 0.5
+  spawnPositionNoise: 10
+  allySpawnBatchCountMin: 5
+  allySpawnBatchCountMax: 10
+  enemySpawnBatchCountMin: 1
+  enemySpawnBatchCountMax: 1
   agentMoveSpeed: 15
   agentScanRadius: 50
   agentStoppingDistance: 3
+  agentAttackRate: 0
+  agentDamage: 0
+  agentInitialHealth: 0
 --- !u!4 &1154472859
 Transform:
   m_ObjectHideFlags: 0

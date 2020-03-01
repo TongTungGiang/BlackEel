@@ -34,10 +34,12 @@ namespace BE.ECS
             m_LastSpawn = Time.time - m_Random.NextFloat(-GameData.Instance.spawnRateNoise, GameData.Instance.spawnRateNoise);
             World.GetOrCreateSystem<WaypointManagementSystem>().GetWaypointPosition(0, out float3 firstWaypointPos);
 
-            int batchCount = GameData.Instance.enemySpawnBatchCount;
+            int batchCount = m_Random.NextInt(GameData.Instance.enemySpawnBatchCountMin, GameData.Instance.enemySpawnBatchCountMax);
             for (int i = 0; i < batchCount; i++)
             {
-                var instanceSpawnPos = firstWaypointPos + new float3(m_Random.NextFloat(-GameData.Instance.spawnPositionNoise, GameData.Instance.spawnPositionNoise), 0, m_Random.NextFloat(-GameData.Instance.spawnPositionNoise, GameData.Instance.spawnPositionNoise));
+                var instanceSpawnPos = firstWaypointPos + 
+                    new float3(m_Random.NextFloat(-GameData.Instance.spawnPositionNoise, GameData.Instance.spawnPositionNoise), 
+                    0, m_Random.NextFloat(-GameData.Instance.spawnPositionNoise, GameData.Instance.spawnPositionNoise));
 
                 Entity prefab = GameData.Instance.EnemyEntityPrefab;
                 Entity instance = EntityManager.Instantiate(prefab);
@@ -53,10 +55,10 @@ namespace BE.ECS
                 EntityManager.AddComponentData(instance, new AttackRadiusComponent { Value = GameData.Instance.agentScanRadius });
 
                 EntityManager.AddSharedComponentData(instance, new EnemyTeamComponent());
-            }
 
-            EntityManager.AddComponentData(instance, new HealthComponent { Value = GameData.Instance.agentInitialHealth });
-            EntityManager.AddSharedComponentData(instance, new MaxHealthComponent { Value = GameData.Instance.agentInitialHealth });
+                EntityManager.AddComponentData(instance, new HealthComponent { Value = GameData.Instance.agentInitialHealth });
+                EntityManager.AddSharedComponentData(instance, new MaxHealthComponent { Value = GameData.Instance.agentInitialHealth });
+            }
         }
     }
 }

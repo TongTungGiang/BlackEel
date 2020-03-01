@@ -9,8 +9,10 @@ public class GameData : Singleton<GameData>
     public float spawnRateNoise = 0.5f;
     public float spawnPositionNoise = 10;
 
-    public int allySpawnBatchCount = 5;
-    public int enemySpawnBatchCount = 1;
+    public int allySpawnBatchCountMin = 5;
+    public int allySpawnBatchCountMax = 5;
+    public int enemySpawnBatchCountMin = 1;
+    public int enemySpawnBatchCountMax = 1;
 
     private Entity m_EnemyEntityPrefab = Entity.Null;
 
