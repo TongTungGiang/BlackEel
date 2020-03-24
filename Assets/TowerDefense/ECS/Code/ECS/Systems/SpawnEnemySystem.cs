@@ -56,8 +56,8 @@ namespace BE.ECS
 
                 EntityManager.AddSharedComponentData(instance, new EnemyTeamComponent());
 
-                EntityManager.AddComponentData(instance, new HealthComponent { Value = GameData.Instance.agentInitialHealth });
-                EntityManager.AddSharedComponentData(instance, new MaxHealthComponent { Value = GameData.Instance.agentInitialHealth });
+                int maxHealth = m_Random.NextInt(GameData.Instance.agentInitialHealthMin, GameData.Instance.agentInitialHealthMax);
+                EntityManager.AddComponentData(instance, new HealthComponent { Health = maxHealth, MaxHealth = maxHealth });
             }
         }
     }

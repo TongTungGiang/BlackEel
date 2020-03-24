@@ -8,12 +8,7 @@ namespace BE.ECS
     [Serializable]
     public struct HealthComponent : IComponentData
     {
-        public float Value;
-    }
-
-    [Serializable]
-    public struct MaxHealthComponent : ISharedComponentData
-    {
-        public float Value;
+        public float MaxHealth;
+        public float Health;
     }
 }

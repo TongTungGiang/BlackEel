@@ -17,7 +17,7 @@ namespace BE.ECS
 
             public void Execute(Entity entity, int jobIndex, ref HealthComponent health)
             {
-                if (health.Value < 0)
+                if (health.Health < 0)
                 {
                     CommandBuffer.DestroyEntity(jobIndex, entity);
                 }

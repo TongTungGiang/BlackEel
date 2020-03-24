@@ -18,7 +18,7 @@ namespace BE.ECS
 
             public void Execute(Entity entity, int jobIndex, ref DamageComponent damage, ref HealthComponent health)
             {
-                health.Value -= damage.Amount;
+                health.Health -= damage.Amount;
 
                 CommandBuffer.RemoveComponent<DamageComponent>(jobIndex, entity);
             }

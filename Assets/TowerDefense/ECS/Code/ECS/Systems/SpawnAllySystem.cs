@@ -37,8 +37,8 @@ namespace BE.ECS
             int batchCount = m_Random.NextInt(GameData.Instance.allySpawnBatchCountMin, GameData.Instance.allySpawnBatchCountMax);
             for (int i = 0; i < batchCount; i++)
             {
-                float3 instanceSpawnPos = spawnPos + 
-                    new float3(m_Random.NextFloat(-GameData.Instance.spawnPositionNoise, GameData.Instance.spawnPositionNoise), 
+                float3 instanceSpawnPos = spawnPos +
+                    new float3(m_Random.NextFloat(-GameData.Instance.spawnPositionNoise, GameData.Instance.spawnPositionNoise),
                     0, m_Random.NextFloat(-GameData.Instance.spawnPositionNoise, GameData.Instance.spawnPositionNoise));
 
                 Entity prefab = GameData.Instance.AllyEntityPrefab;
@@ -53,8 +53,9 @@ namespace BE.ECS
 
                 EntityManager.AddSharedComponentData(instance, new AllyTeamComponent());
 
-                EntityManager.AddComponentData(instance, new HealthComponent { Value = GameData.Instance.agentInitialHealth });
-                EntityManager.AddSharedComponentData(instance, new MaxHealthComponent { Value = GameData.Instance.agentInitialHealth });
+                int maxHealth = m_Random.NextInt(GameData.Instance.agentInitialHealthMin, GameData.Instance.agentInitialHealthMax);
+                EntityManager.AddComponentData(instance, new HealthComponent { Health = maxHealth, MaxHealth = maxHealth });
             }
         }
-    } }
+    }
+}
