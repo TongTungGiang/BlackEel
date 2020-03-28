@@ -14,12 +14,44 @@ namespace BE.ECS
         private float m_LastSpawn;
         private float m_SpawnRate;
         private Unity.Mathematics.Random m_Random;
+        private float3 m_FirstWaypointPos;
+        private bool m_HasFirstWaypointInitialized = false;
+
+        private float3 FirstWaypointPos
+        {
+            get
+            {
+                if (m_HasFirstWaypointInitialized == false)
+                {
+                    var allWaypoint = GetEntityQuery(typeof(WaypointIndexComponent));
+                    int count = allWaypoint.CalculateEntityCount();
+                    if (count > 0)
+                    {
+                        NativeArray<Entity> waypointEntities = allWaypoint.ToEntityArray(Allocator.TempJob);
+                        for (int i = 0; i < waypointEntities.Length; i++)
+                        {
+                            WaypointIndexComponent index = EntityManager.GetComponentData<WaypointIndexComponent>(waypointEntities[i]);
+                            Translation trans = EntityManager.GetComponentData<Translation>(waypointEntities[i]);
+                            if (index.Value == 0)
+                            {
+                                m_FirstWaypointPos = trans.Value;
+                                m_HasFirstWaypointInitialized = true;
+                                break;
+                            }
+                        }
+                        waypointEntities.Dispose();
+                    }
+                }
+
+                return m_FirstWaypointPos;
+            }
+        }
 
         protected override void OnCreate()
         {
             m_SpawnRate = GameData.Instance.spawnRate;
 
-            m_LastSpawn = Time.time - m_SpawnRate * 2;
+            m_LastSpawn = Time.time;
 
             m_Random = new Unity.Mathematics.Random((uint)UnityEngine.Random.Range(0, 1000));
         }
@@ -32,13 +64,12 @@ namespace BE.ECS
             }
 
             m_LastSpawn = Time.time - m_Random.NextFloat(-GameData.Instance.spawnRateNoise, GameData.Instance.spawnRateNoise);
-            World.GetOrCreateSystem<WaypointManagementSystem>().GetWaypointPosition(0, out float3 firstWaypointPos);
 
             int batchCount = m_Random.NextInt(GameData.Instance.enemySpawnBatchCountMin, GameData.Instance.enemySpawnBatchCountMax);
             for (int i = 0; i < batchCount; i++)
             {
-                var instanceSpawnPos = firstWaypointPos + 
-                    new float3(m_Random.NextFloat(-GameData.Instance.spawnPositionNoise, GameData.Instance.spawnPositionNoise), 
+                var instanceSpawnPos = FirstWaypointPos +
+                    new float3(m_Random.NextFloat(-GameData.Instance.spawnPositionNoise, GameData.Instance.spawnPositionNoise),
                     0, m_Random.NextFloat(-GameData.Instance.spawnPositionNoise, GameData.Instance.spawnPositionNoise));
 
                 Entity prefab = GameData.Instance.EnemyEntityPrefab;

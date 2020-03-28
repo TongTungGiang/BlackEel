@@ -8,45 +8,114 @@ using static Unity.Mathematics.math;
 
 namespace BE.ECS
 {
-    public class PathwayMovementSystem : ComponentSystem
+    public class PathwayMovementSystem : JobComponentSystem
     {
-        private EntityQuery m_Query;
+        struct PathwayMovementJob : IJobChunk
+        {
+            [ReadOnly] public NativeArray<Translation> AllWaypoint;
+            [ReadOnly] public ArchetypeChunkEntityType EntityType;
+            [ReadOnly] public ArchetypeChunkComponentType<WaypointMovementComponent> WaypointMovementType;
+            [ReadOnly] public Random Random;
+            [WriteOnly] public EntityCommandBuffer.Concurrent CommandBuffer;
+
+            public void Execute(ArchetypeChunk chunk, int chunkIndex, int firstEntityIndex)
+            {
+                var chunkEntities = chunk.GetNativeArray(EntityType);
+                var chunkWaypointMovement = chunk.GetNativeArray(WaypointMovementType);
+
+                for (int i = 0; i < chunk.Count; i++)
+                {
+                    Entity target = chunkEntities[i];
+                    WaypointMovementComponent waypointMovement = chunkWaypointMovement[i];
+                    waypointMovement.CurrentTargetIndex++;
+
+                    if (waypointMovement.CurrentTargetIndex > 0 && waypointMovement.CurrentTargetIndex < AllWaypoint.Length)
+                    {
+                        var noise = new float3(Random.NextFloat(-GameData.Instance.spawnPositionNoise, GameData.Instance.spawnPositionNoise), 0, Random.NextFloat(-GameData.Instance.spawnPositionNoise, GameData.Instance.spawnPositionNoise));
+                        var waypointPos = AllWaypoint[waypointMovement.CurrentTargetIndex].Value + noise;
+                        CommandBuffer.AddComponent(chunkIndex, target, new MoveForwardComponent { Target = waypointPos });
+                        CommandBuffer.SetComponent(chunkIndex, target, waypointMovement);
+                    }
+                    else
+                    {
+                        CommandBuffer.RemoveComponent<WaypointMovementComponent>(chunkIndex, target);
+                    }
+                }
+            }
+        }
+
+        private EntityQuery m_AgentQuery;
+        private NativeArray<Translation> m_AllWaypointTranslation;
+        private bool m_WaypointTranslationInitialized;
         private Unity.Mathematics.Random m_Random;
+        private EntityCommandBufferSystem m_Barrier;
+
+        private NativeArray<Translation> AllWaypointTranslation
+        {
+            get
+            {
+                if (m_WaypointTranslationInitialized == false)
+                {
+
+                    var allWaypoint = GetEntityQuery(typeof(WaypointIndexComponent));
+                    int count = allWaypoint.CalculateEntityCount();
+                    if (count > 0)
+                    {
+                        m_AllWaypointTranslation = new NativeArray<Translation>(count, Allocator.Persistent);
+                        NativeArray<Entity> waypointEntities = allWaypoint.ToEntityArray(Allocator.TempJob);
+                        for (int i = 0; i < waypointEntities.Length; i++)
+                        {
+                            WaypointIndexComponent index = EntityManager.GetComponentData<WaypointIndexComponent>(waypointEntities[i]);
+                            Translation trans = EntityManager.GetComponentData<Translation>(waypointEntities[i]);
+                            m_AllWaypointTranslation[index.Value] = trans;
+                        }
+                        waypointEntities.Dispose();
+                        m_WaypointTranslationInitialized = true;
+                    }
+                }
+
+                return m_AllWaypointTranslation;
+            }
+        }
 
         protected override void OnCreate()
         {
-            EntityQueryDesc desc = new EntityQueryDesc()
+            EntityQueryDesc agentQueryDesc = new EntityQueryDesc()
             {
                 All = new ComponentType[] { typeof(WaypointMovementComponent), typeof(FollowWaypointTag) },
                 None = new ComponentType[] { typeof(MoveForwardComponent), typeof(AttackTargetComponent) }
             };
-            m_Query = GetEntityQuery(desc);
+            m_AgentQuery = GetEntityQuery(agentQueryDesc);
 
             m_Random = new Unity.Mathematics.Random((uint)UnityEngine.Random.Range(0, 1000));
+            m_Barrier = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
         }
 
-        protected override void OnUpdate()
+        protected override void OnDestroy()
         {
-            var entities = m_Query.ToEntityArray(Allocator.TempJob);
+            m_AllWaypointTranslation.Dispose();
+        }
 
-            foreach (var e in entities)
+        protected override JobHandle OnUpdate(JobHandle inputDeps)
+        {
+            var commandBuffer = m_Barrier.CreateCommandBuffer().ToConcurrent();
+            PathwayMovementJob pathwayMovementJob = new PathwayMovementJob
             {
-                WaypointMovementComponent waypointMovement = EntityManager.GetComponentData<WaypointMovementComponent>(e);
-                waypointMovement.CurrentTargetIndex++;
-                EntityManager.SetComponentData(e, waypointMovement);
+                EntityType = GetArchetypeChunkEntityType(),
 
-                if (World.GetOrCreateSystem<WaypointManagementSystem>().GetWaypointPosition(waypointMovement.CurrentTargetIndex, out float3 waypointPosition))
-                {
-                    waypointPosition += new float3(m_Random.NextFloat(-GameData.Instance.spawnPositionNoise, GameData.Instance.spawnPositionNoise), 0, m_Random.NextFloat(-GameData.Instance.spawnPositionNoise, GameData.Instance.spawnPositionNoise));
-                    EntityManager.AddComponentData(e, new MoveForwardComponent { Target = waypointPosition });
-                }
-                else
-                {
-                    EntityManager.RemoveComponent<WaypointMovementComponent>(e);
-                }
-            }
+                WaypointMovementType = GetArchetypeChunkComponentType<WaypointMovementComponent>(false),
 
-            entities.Dispose();
+                AllWaypoint = AllWaypointTranslation,
+
+                CommandBuffer = commandBuffer,
+
+                Random = m_Random
+            };
+
+            var handle = pathwayMovementJob.Schedule(m_AgentQuery, inputDeps);
+            m_Barrier.AddJobHandleForProducer(handle);
+
+            return handle;
         }
     }
 }

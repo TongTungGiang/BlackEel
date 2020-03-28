@@ -21,7 +21,7 @@ namespace BE
                 float3 waypointPos = transform.GetChild(i).transform.position;
 
                 Entity entity = entityManager.CreateEntity();
-                entityManager.AddSharedComponentData(entity, new WaypointIndexComponent { Value = i });
+                entityManager.AddComponentData(entity, new WaypointIndexComponent { Value = i });
                 entityManager.AddComponentData(entity, new Translation { Value = waypointPos });
                 entityManager.SetName(entity, string.Format("Waypoint {0}", i));
             }

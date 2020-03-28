@@ -154,6 +154,9 @@ namespace BE.ECS
             };
             JobHandle jobHandleAvE = jobAvE.Schedule(m_Ally_NoAttackTarget, jobHandleEvA);
 
+            m_Barrier.AddJobHandleForProducer(jobHandleEvA);
+            m_Barrier.AddJobHandleForProducer(jobHandleAvE);
+
             return jobHandleAvE;
         }
 
