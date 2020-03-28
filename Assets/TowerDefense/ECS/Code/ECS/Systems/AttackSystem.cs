@@ -28,7 +28,6 @@ namespace BE.ECS
                     Entity e = commandBuffer.CreateEntity(jobIndex);
                     commandBuffer.AddComponent(jobIndex, e,
                         new DamageComponent { Source = entity, Target = attackTarget.Target, Amount = damage });
-                    Debug.LogFormat("[Attack] {0} casts {1} damage on {2}", entity, damage, attackTarget.Target);
                 }
             }
         }
