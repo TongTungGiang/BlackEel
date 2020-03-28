@@ -37,9 +37,12 @@ namespace BE.ECS
                     for (int i = 0; i < chunk.Count; i++)
                     {
                         Entity target = chunkTarget[i].Target;
-                        float3 targetPos = AllTranslation[target].Value;
-                        CommandBuffer.SetComponent(chunkIndex, chunkEntities[i],
-                            new MoveForwardComponent() { Target = GetStopPosition(chunkTranslation[i].Value, targetPos) });
+                        if (AllTranslation.Exists(target))
+                        {
+                            float3 targetPos = AllTranslation[target].Value;
+                            CommandBuffer.SetComponent(chunkIndex, chunkEntities[i],
+                                new MoveForwardComponent() { Target = GetStopPosition(chunkTranslation[i].Value, targetPos) });
+                        }
                     }
                 }
                 else
@@ -47,13 +50,16 @@ namespace BE.ECS
                     for (int i = 0; i < chunk.Count; i++)
                     {
                         Entity target = chunkTarget[i].Target;
-                        float3 targetPos = AllTranslation[target].Value;
 
-                        float3 delta = chunkTranslation[i].Value - targetPos;
-                        if (math.lengthsq(delta) > StoppingDistanceSquare)
+                        if (AllTranslation.Exists(target))
                         {
-                            CommandBuffer.AddComponent(chunkIndex, chunkEntities[i],
-                                new MoveForwardComponent() { Target = GetStopPosition(chunkTranslation[i].Value, targetPos) });
+                            float3 targetPos = AllTranslation[target].Value;
+                            float3 delta = chunkTranslation[i].Value - targetPos;
+                            if (math.lengthsq(delta) > StoppingDistanceSquare)
+                            {
+                                CommandBuffer.AddComponent(chunkIndex, chunkEntities[i],
+                                    new MoveForwardComponent() { Target = GetStopPosition(chunkTranslation[i].Value, targetPos) });
+                            }
                         }
                     }
                 }
