@@ -31,6 +31,7 @@ namespace BE.Mono
         {
             if (m_CurrentHealth <= 0)
             {
+                StatDisplay.Instance.AgentCount -= 1;
                 Destroy(gameObject);
                 return;
             }

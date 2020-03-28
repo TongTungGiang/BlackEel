@@ -38,6 +38,8 @@ namespace BE.Mono
                 GameObject instance = Instantiate(m_AllyPrefab, instanceSpawnPos, Quaternion.identity);
                 instance.GetComponent<AttackScript>().SetupHealth(Random.Range(GameData.Instance.agentInitialHealthMin, GameData.Instance.agentInitialHealthMax));
             }
+
+            StatDisplay.Instance.AgentCount += batchCount;
         }
 
         private void SpawnEnemy()
@@ -53,6 +55,8 @@ namespace BE.Mono
                 instance.GetComponent<FollowPathway>().WaypointParent = m_WaypointParent;
                 instance.GetComponent<AttackScript>().SetupHealth(Random.Range(GameData.Instance.agentInitialHealthMin, GameData.Instance.agentInitialHealthMax));
             }
+
+            StatDisplay.Instance.AgentCount += batchCount;
         }
 
         private Vector3 GetNoisedPosition(Vector3 originalPosition)

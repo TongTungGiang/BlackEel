@@ -27,6 +27,11 @@ namespace BE.ECS
             if (EntityManager.Exists(a.Target) == false)
             {
                 EntityManager.RemoveComponent<AttackTargetComponent>(e);
+
+                if (EntityManager.HasComponent<EnemyTeamComponent>(e))
+                {
+                    EntityManager.AddComponent<FollowWaypointTag>(e);
+                }
             }
         }
     }

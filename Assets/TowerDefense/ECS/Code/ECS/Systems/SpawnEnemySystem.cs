@@ -60,6 +60,8 @@ namespace BE.ECS
                 EntityManager.AddComponentData(instance, new HealthComponent { Health = maxHealth, MaxHealth = maxHealth });
                 EntityManager.AddComponentData(instance, new AttackStatusComponent { });
             }
+
+            StatDisplay.Instance.AgentCount += batchCount;
         }
     }
 }

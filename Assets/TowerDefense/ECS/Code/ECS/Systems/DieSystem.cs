@@ -19,7 +19,11 @@ namespace BE.ECS
         private void ProcessDie(Entity e, ref HealthComponent health)
         {
             if (health.Health < 0)
+            {
                 EntityManager.DestroyEntity(e);
+
+                StatDisplay.Instance.AgentCount -= 1;
+            }
         }
     }
 }
