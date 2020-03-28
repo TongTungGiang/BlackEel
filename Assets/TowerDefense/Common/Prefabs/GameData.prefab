@@ -48,8 +48,8 @@ MonoBehaviour:
   spawnPositionNoise: 10
   allySpawnBatchCountMin: 5
   allySpawnBatchCountMax: 10
-  enemySpawnBatchCountMin: 1
-  enemySpawnBatchCountMax: 1
+  enemySpawnBatchCountMin: 3
+  enemySpawnBatchCountMax: 3
   agentMoveSpeed: 15
   agentScanRadius: 50
   agentStoppingDistance: 3

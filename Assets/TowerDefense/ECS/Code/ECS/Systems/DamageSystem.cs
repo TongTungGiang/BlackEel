@@ -5,40 +5,27 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Transforms;
 using static Unity.Mathematics.math;
+using UnityEngine;
 
 namespace BE.ECS
 {
-    public class DamageSystem : JobComponentSystem
+    public class DamageSystem : ComponentSystem
     {
-        //[BurstCompile]
-        struct DamageSystemJob : IJobForEachWithEntity<DamageComponent, HealthComponent>
+        protected override void OnUpdate()
         {
-            [WriteOnly]
-            public EntityCommandBuffer.Concurrent CommandBuffer;
+            Entities.WithAll<DamageComponent>().ForEach<DamageComponent>(ProcessDamage);
+        }
 
-            public void Execute(Entity entity, int jobIndex, ref DamageComponent damage, ref HealthComponent health)
+        private void ProcessDamage(Entity e, ref DamageComponent damage)
+        {
+            if (EntityManager.Exists(damage.Target))
             {
+                var health = EntityManager.GetComponentData<HealthComponent>(damage.Target);
                 health.Health -= damage.Amount;
-
-                CommandBuffer.RemoveComponent<DamageComponent>(jobIndex, entity);
+                EntityManager.SetComponentData(damage.Target, health);
             }
-        }
 
-        EntityCommandBufferSystem m_Barrier;
-
-        protected override void OnCreate()
-        {
-            m_Barrier = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
-        }
-
-        protected override JobHandle OnUpdate(JobHandle inputDependencies)
-        {
-            var commandBuffer = m_Barrier.CreateCommandBuffer().ToConcurrent();
-            var job = new DamageSystemJob() { CommandBuffer = commandBuffer };
-            var jobHandle = job.Schedule(this, inputDependencies);
-            m_Barrier.AddJobHandleForProducer(jobHandle);
-
-            return jobHandle;
+            EntityManager.DestroyEntity(e);
         }
     }
 }

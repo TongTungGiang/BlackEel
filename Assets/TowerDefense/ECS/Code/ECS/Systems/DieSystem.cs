@@ -8,38 +8,18 @@ using static Unity.Mathematics.math;
 
 namespace BE.ECS
 {
-    public class DieSystem : JobComponentSystem
+    [UpdateAfter(typeof(DamageSystem))]
+    public class DieSystem : ComponentSystem
     {
-        struct DieSystemJob : IJobForEachWithEntity<HealthComponent>
+        protected override void OnUpdate()
         {
-            [WriteOnly]
-            public EntityCommandBuffer.Concurrent CommandBuffer;
-
-            public void Execute(Entity entity, int jobIndex, ref HealthComponent health)
-            {
-                if (health.Health < 0)
-                {
-                    CommandBuffer.DestroyEntity(jobIndex, entity);
-                }
-            }
+            Entities.WithAll<AgentTag, HealthComponent>().ForEach<HealthComponent>(ProcessDie);
         }
 
-        EntityCommandBufferSystem m_Barrier;
-
-        protected override void OnCreate()
+        private void ProcessDie(Entity e, ref HealthComponent health)
         {
-            m_Barrier = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
-        }
-
-        protected override JobHandle OnUpdate(JobHandle inputDependencies)
-        {
-            var commandBuffer = m_Barrier.CreateCommandBuffer().ToConcurrent();
-            var job = new DieSystemJob() { CommandBuffer = commandBuffer };
-
-            var jobHandle = job.Schedule(this, inputDependencies);
-            m_Barrier.AddJobHandleForProducer(jobHandle);
-
-            return jobHandle;
+            if (health.Health < 0)
+                EntityManager.DestroyEntity(e);
         }
     }
 }

@@ -10,4 +10,10 @@ namespace BE.ECS
     {
         public Entity Target;
     }
+
+    [Serializable]
+    public struct AttackStatusComponent : IComponentData
+    {
+        public float LastAttack;
+    }
 }

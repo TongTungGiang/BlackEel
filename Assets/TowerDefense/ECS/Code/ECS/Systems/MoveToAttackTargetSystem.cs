@@ -63,6 +63,7 @@ namespace BE.ECS
                     for (int i = 0; i < chunk.Count; i++)
                     {
                         CommandBuffer.RemoveComponent<FollowWaypointTag>(chunkIndex, chunkEntities[i]);
+                        CommandBuffer.AddComponent(chunkIndex, chunkEntities[i], new InAttackRangeTag());
                     }
                 }
             }

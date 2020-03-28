@@ -44,7 +44,7 @@ namespace BE.Mono
         {
             Vector3 randomSpawnPointPosition = m_WaypointParent.GetChild(0).position;
 
-            int batchCount = Random.Range(GameData.Instance.allySpawnBatchCountMin, GameData.Instance.allySpawnBatchCountMax);
+            int batchCount = Random.Range(GameData.Instance.enemySpawnBatchCountMin, GameData.Instance.enemySpawnBatchCountMax);
             for (int i = 0; i < batchCount; i++)
             {
                 Vector3 instanceSpawnPos = GetNoisedPosition(randomSpawnPointPosition);

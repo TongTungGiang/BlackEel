@@ -55,6 +55,7 @@ namespace BE.ECS
 
                 int maxHealth = m_Random.NextInt(GameData.Instance.agentInitialHealthMin, GameData.Instance.agentInitialHealthMax);
                 EntityManager.AddComponentData(instance, new HealthComponent { Health = maxHealth, MaxHealth = maxHealth });
+                EntityManager.AddComponentData(instance, new AttackStatusComponent { });
             }
         }
     }
