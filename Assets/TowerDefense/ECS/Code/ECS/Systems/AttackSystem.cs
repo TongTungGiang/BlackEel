@@ -45,7 +45,7 @@ namespace BE.ECS
 
             var job = new AttackSystemJob
             {
-                time = Time.time,
+                time = UnityEngine.Time.time,
                 attackRate = GameData.Instance.agentAttackRate,
                 damage = GameData.Instance.agentDamage,
                 commandBuffer = commandBuffer

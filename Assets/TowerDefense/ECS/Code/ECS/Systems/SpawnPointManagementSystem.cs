@@ -75,9 +75,9 @@ namespace BE.ECS
                 return false;
             }
 
-            m_Query.SetFilter(new AllySpawnPointIndexComponent() { Value = index });
+            m_Query.SetSharedComponentFilter(new AllySpawnPointIndexComponent() { Value = index });
             var queryResultEntities = m_Query.ToEntityArray(Allocator.TempJob);
-
+            
             position = EntityManager.GetComponentData<Translation>(queryResultEntities[0]).Value;
             queryResultEntities.Dispose();
             return true;

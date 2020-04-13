@@ -15,8 +15,8 @@ namespace BE.ECS
         // Start is called before the first frame update
         void Start()
         {
-            GameData.Instance.RegisterEnemyEntityPrefab(GameObjectConversionUtility.ConvertGameObjectHierarchy(enemy, World.Active));
-            GameData.Instance.RegisterAllyEntityPrefab(GameObjectConversionUtility.ConvertGameObjectHierarchy(ally, World.Active));
+            GameData.Instance.RegisterEnemyEntityPrefab(GameObjectConversionUtility.ConvertGameObjectHierarchy(enemy, World.DefaultGameObjectInjectionWorld));
+            GameData.Instance.RegisterAllyEntityPrefab(GameObjectConversionUtility.ConvertGameObjectHierarchy(ally, World.DefaultGameObjectInjectionWorld));
         }
     }
 }
