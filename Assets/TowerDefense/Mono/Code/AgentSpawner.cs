@@ -6,10 +6,10 @@ namespace BE.Mono
 {
     public class AgentSpawner : MonoBehaviour
     {
-        [SerializeField] Transform m_WaypointParent;
-        [SerializeField] Transform m_AllySpawnPointsParent;
-        [SerializeField] GameObject m_EnemyPrefab;
-        [SerializeField] GameObject m_AllyPrefab;
+        [SerializeField] Transform m_WaypointParent = default;
+        [SerializeField] Transform m_AllySpawnPointsParent = default;
+        [SerializeField] GameObject m_EnemyPrefab = default;
+        [SerializeField] GameObject m_AllyPrefab = default;
 
         private float m_LastSpawn;
 
