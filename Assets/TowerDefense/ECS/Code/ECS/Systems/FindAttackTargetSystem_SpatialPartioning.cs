@@ -11,25 +11,32 @@ using Unity.Transforms;
 namespace BE.ECS
 {
 
-    public class FindAttackTargetSystem : ComponentSystem
+    public class FindAttackTargetSystem : SystemBase
     {
         EntityQuery m_AgentQuery;
 
         protected override void OnUpdate()
         {
             int agentCount = m_AgentQuery.CalculateEntityCount();
-            NativeMultiHashMap<Cell, Entity> spatialPartition = new NativeMultiHashMap<Cell, Entity>(agentCount, Allocator.TempJob);
+            NativeMultiHashMap<int, Entity> cellMap = new NativeMultiHashMap<int, Entity>(agentCount, Allocator.TempJob);
 
             // Allocate entities into cell hashmap
-            Entities.With(m_AgentQuery).ForEach<Translation>((Entity e, ref Translation t) => 
-            {
-                Cell c = Cell.FromPos(t.Value);
-                spatialPartition.Add(c, e);
-            });
+            var parallelCellMap = cellMap.AsParallelWriter();
+            var cellAllocateJobHandle = Entities.WithAll<AgentTag>()
+                .ForEach((Entity e, in Translation t) =>
+                {
+                    Cell c = Cell.FromPos(t.Value);
+                    var hash = (int)math.hash(new int2(c.x, c.y));
+                    parallelCellMap.Add(hash, e);
+                })
+                .ScheduleParallel(Dependency);
 
             // Find targets in allocated cells
 
-            spatialPartition.Dispose();            
+
+            var disposeJobHandle = cellMap.Dispose(cellAllocateJobHandle);
+
+            Dependency = disposeJobHandle;
         }
 
         protected override void OnCreate()
