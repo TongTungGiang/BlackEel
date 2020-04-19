@@ -51,19 +51,19 @@ namespace BE.ECS
         {
             m_SpawnRate = GameData.Instance.spawnRate;
 
-            m_LastSpawn = Time.time;
+            m_LastSpawn = UnityEngine.Time.time;
 
             m_Random = new Unity.Mathematics.Random((uint)UnityEngine.Random.Range(0, 1000));
         }
 
         protected override void OnUpdate()
         {
-            if (Time.time - m_LastSpawn < m_SpawnRate)
+            if (UnityEngine.Time.time - m_LastSpawn < m_SpawnRate)
             {
                 return;
             }
 
-            m_LastSpawn = Time.time - m_Random.NextFloat(-GameData.Instance.spawnRateNoise, GameData.Instance.spawnRateNoise);
+            m_LastSpawn = UnityEngine.Time.time - m_Random.NextFloat(-GameData.Instance.spawnRateNoise, GameData.Instance.spawnRateNoise);
 
             int batchCount = m_Random.NextInt(GameData.Instance.enemySpawnBatchCountMin, GameData.Instance.enemySpawnBatchCountMax);
             for (int i = 0; i < batchCount; i++)

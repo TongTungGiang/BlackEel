@@ -6,7 +6,7 @@ namespace BE.Mono
 {
     public class AttackScript : MonoBehaviour
     {
-        [SerializeField] private LayerMask m_LayerToCheck;
+        [SerializeField] private LayerMask m_LayerToCheck = default;
         [SerializeField] private float m_CurrentHealth;
         [SerializeField] private float m_MaxHealth;
 

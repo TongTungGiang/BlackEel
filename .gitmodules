@@ -1,0 +1,3 @@
+[submodule "Assets/NativeCollections"]
+	path = Assets/NativeCollections
+	url = https://github.com/jacksondunstan/NativeCollections.git

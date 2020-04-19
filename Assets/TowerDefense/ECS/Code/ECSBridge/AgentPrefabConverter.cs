@@ -15,8 +15,10 @@ namespace BE.ECS
         // Start is called before the first frame update
         void Start()
         {
-            GameData.Instance.RegisterEnemyEntityPrefab(GameObjectConversionUtility.ConvertGameObjectHierarchy(enemy, World.Active));
-            GameData.Instance.RegisterAllyEntityPrefab(GameObjectConversionUtility.ConvertGameObjectHierarchy(ally, World.Active));
+#pragma warning disable CS0618 // Type or member is obsolete
+            GameData.Instance.RegisterEnemyEntityPrefab(GameObjectConversionUtility.ConvertGameObjectHierarchy(enemy, World.DefaultGameObjectInjectionWorld));
+            GameData.Instance.RegisterAllyEntityPrefab(GameObjectConversionUtility.ConvertGameObjectHierarchy(ally, World.DefaultGameObjectInjectionWorld));
+#pragma warning restore CS0618 // Type or member is obsolete
         }
     }
 }

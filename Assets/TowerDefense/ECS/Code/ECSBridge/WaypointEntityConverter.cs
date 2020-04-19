@@ -14,7 +14,7 @@ namespace BE
         // Start is called before the first frame update
         void Awake()
         {
-            EntityManager entityManager = World.Active.EntityManager;
+            EntityManager entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
 
             for (int i = 0; i < transform.childCount; i++)
             {

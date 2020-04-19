@@ -51,7 +51,7 @@ namespace BE.ECS
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
             var commandBuffer = m_Barrier.CreateCommandBuffer().ToConcurrent();
-            var job = new MoveForwardJob() { DeltaTime = Time.deltaTime, CommandBuffer = commandBuffer };
+            var job = new MoveForwardJob() { DeltaTime = Time.DeltaTime, CommandBuffer = commandBuffer };
 
             var jobHandle = job.Schedule(this, inputDeps);
             m_Barrier.AddJobHandleForProducer(jobHandle);
