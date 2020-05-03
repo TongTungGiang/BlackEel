@@ -17,6 +17,7 @@ namespace BE.ECS
             [ReadOnly] public ArchetypeChunkComponentType<WaypointMovementComponent> WaypointMovementType;
             [ReadOnly] public Random Random;
             [WriteOnly] public EntityCommandBuffer.Concurrent CommandBuffer;
+            [ReadOnly] public float Noise;
 
             public void Execute(ArchetypeChunk chunk, int chunkIndex, int firstEntityIndex)
             {
@@ -31,7 +32,7 @@ namespace BE.ECS
 
                     if (waypointMovement.CurrentTargetIndex > 0 && waypointMovement.CurrentTargetIndex < AllWaypoint.Length)
                     {
-                        var noise = new float3(Random.NextFloat(-GameData.Instance.spawnPositionNoise, GameData.Instance.spawnPositionNoise), 0, Random.NextFloat(-GameData.Instance.spawnPositionNoise, GameData.Instance.spawnPositionNoise));
+                        var noise = new float3(Random.NextFloat(-Noise, Noise), 0, Random.NextFloat(-Noise, Noise));
                         var waypointPos = AllWaypoint[waypointMovement.CurrentTargetIndex].Value + noise;
                         CommandBuffer.AddComponent(chunkIndex, target, new MoveForwardComponent { Target = waypointPos });
                         CommandBuffer.SetComponent(chunkIndex, target, waypointMovement);
@@ -49,6 +50,7 @@ namespace BE.ECS
         private bool m_WaypointTranslationInitialized;
         private Unity.Mathematics.Random m_Random;
         private EntityCommandBufferSystem m_Barrier;
+        private float m_NoiseValue;
 
         private NativeArray<Translation> AllWaypointTranslation
         {
@@ -89,6 +91,7 @@ namespace BE.ECS
 
             m_Random = new Unity.Mathematics.Random((uint)UnityEngine.Random.Range(0, 1000));
             m_Barrier = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
+            m_NoiseValue = GameData.Instance.spawnPositionNoise;
         }
 
         protected override void OnDestroy()
@@ -109,7 +112,9 @@ namespace BE.ECS
 
                 CommandBuffer = commandBuffer,
 
-                Random = m_Random
+                Random = m_Random,
+
+                Noise = m_NoiseValue
             };
 
             var handle = pathwayMovementJob.Schedule(m_AgentQuery, inputDeps);
